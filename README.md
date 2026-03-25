@@ -195,7 +195,7 @@ Calculate Ka/Ks (non-synonymous/synonymous substitution rates). Supports two mod
 
 **Note**: `all.cds.fa` is a superset containing all CDS sequences for all genes across all species. kaks.py extracts only the CDS corresponding to genes present in Orthogroups.
 
-**Note**: `kaks.py` is a Python reimplementation of [KaKs_Calculator 3.0](https://github.com/kullrich/kakscalculator2) (Zhang et al., 2021). It supports all methods from KaKs_Calculator 3.0 including Model Averaging (MA) and Model Selection (MS), with built-in Python fallback (Nei-Gojobori) when KaKs_Calculator is not available. Use `-k` flag to call external KaKs_Calculator 3.0 executable for maximum accuracy.
+**Note**: `kaks.py` is a Python reimplementation of [KaKs_Calculator 3.0](https://ngdc.cncb.ac.cn/biocode/tools/BT000001) (Zhang et al., 2021). It supports all methods from KaKs_Calculator 3.0 including Model Averaging (MA) and Model Selection (MS), with built-in Python fallback (Nei-Gojobori) when KaKs_Calculator is not available. Use `-k` flag to call external KaKs_Calculator 3.0 executable for maximum accuracy.
 
 **AXT Format:**
 ```
