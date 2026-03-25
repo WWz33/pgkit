@@ -689,30 +689,47 @@ if (length(unique(df$Category)) > 1) {{
 # ============================================================
 def main():
     parser = argparse.ArgumentParser(
-        description='Ka/Ks calculation for pan-genome analysis (v2.0)',
+        description='Ka/Ks calculator (KaKs_Calculator 3.0 compatible)',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
+Modes:
+  1. Pan-genome mode: orthogroups_dir + cds_file (random sampling by category)
+  2. Standalone mode: -i input.axt (direct AXT input, like KaKs_Calculator)
+
+AXT Format:
+  seq1 seq2
+  ATGCGT...
+  ATGCGT...
+  
+  (blank line between pairs)
+
 KaKs_Calculator 3.0 Methods:
   NG    Nei-Gojobori (1986)         - Simple, fast
   LWL   Li-Wu-Luo (1985)            - Weighted sites
   LPB   Li-Pamilo-Bianchi (1993)    - Improved weighting
   GY    Goldman-Yang (1994)          - ML, codon model
   YN    Yang-Nielsen (2000)          - ML, HKY model
-  MYN   Modified YN (2006)           - Improved YN
+  MYN   Modified YN (2006)           - Modified YN
   MS    Model Selection (v3.0)       - AIC-based selection
   MA    Model Averaging (v3.0)       - Weighted average [DEFAULT]
 
 Example:
+  # Standalone mode (AXT input)
+  python kaks.py -i pairs.axt -o kaks_output -m MA
+  python kaks.py -i pairs.axt -o kaks_output -m YN -t 8
+
+  # Pan-genome mode (OrthoFinder)
   python kaks.py Orthogroups/ all.cds.fa -n 50 -p 50
-  python kaks.py Orthogroups/ all.cds.fa --use-kaks-calculator -m MA
-  python kaks.py Orthogroups/ all.cds.fa --threads 8 --check-ids
+  python kaks.py Orthogroups/ all.cds.fa -t 8 -m MA -k
 """
     )
     
-    parser.add_argument('orthogroups_dir',
-                        help='OrthoFinder output directory')
-    parser.add_argument('cds_file',
-                        help='Single FASTA file containing all CDS sequences')
+    parser.add_argument('-i', '--input', dest='axt_input', default=None,
+                        help='Standalone mode: input AXT file (pairs of CDS sequences)')
+    parser.add_argument('orthogroups_dir', nargs='?', default=None,
+                        help='OrthoFinder output directory (pan-genome mode)')
+    parser.add_argument('cds_file', nargs='?', default=None,
+                        help='CDS FASTA file (pan-genome mode)')
     parser.add_argument('-o', '--output', default='kaks_results',
                         help='Output directory (default: kaks_results)')
     parser.add_argument('-n', '--n-genes', type=int, default=50,
@@ -737,7 +754,6 @@ Example:
     parser.add_argument('--check-ids', action='store_true',
                         help='Only check CDS/protein ID matching, then exit')
     
-    
     args = parser.parse_args()
     
     random.seed(args.seed)
@@ -751,6 +767,121 @@ Example:
     log(f"Method: {args.method} - {KAKS_METHODS[args.method]}")
     log(f"Genetic code: {args.genetic_code}")
     log(f"Threads: {args.threads}")
+    
+    # Check mode
+    if args.axt_input:
+        # Standalone mode: AXT input
+        run_standalone(args)
+    elif args.orthogroups_dir and args.cds_file:
+        # Pan-genome mode: OrthoFinder + CDS
+        run_pangenome(args)
+    else:
+        print("Error: Either -i (AXT input) or orthogroups_dir + cds_file required")
+        print("Use -h for help")
+        sys.exit(1)
+
+
+def run_standalone(args):
+    """
+    Standalone mode: process AXT file directly (like KaKs_Calculator 3.0)
+    
+    AXT format:
+        seq1_name seq2_name
+        ATGCGT...
+        ATGCGT...
+        
+        (blank line between pairs)
+    """
+    check_file(args.axt_input, "AXT file")
+    
+    log(f"Standalone mode: {args.axt_input}")
+    
+    # Parse AXT file
+    pairs = []
+    with open(args.axt_input, 'r') as f:
+        lines = f.readlines()
+    
+    i = 0
+    while i < len(lines):
+        line = lines[i].strip()
+        if not line:
+            i += 1
+            continue
+        
+        # Header line: "name1 name2"
+        parts = line.split()
+        if len(parts) >= 2:
+            name1, name2 = parts[0], parts[1]
+            i += 1
+            
+            # Sequence 1
+            seq1 = ""
+            while i < len(lines) and lines[i].strip():
+                seq1 += lines[i].strip()
+                i += 1
+            
+            # Sequence 2
+            i += 1
+            seq2 = ""
+            while i < len(lines) and lines[i].strip():
+                seq2 += lines[i].strip()
+                i += 1
+            
+            if seq1 and seq2:
+                pairs.append((name1, name2, seq1, seq2))
+        else:
+            i += 1
+    
+    log(f"  Found {len(pairs)} sequence pairs")
+    
+    if len(pairs) == 0:
+        log("ERROR: No valid pairs found in AXT file")
+        sys.exit(1)
+    
+    # Calculate Ka/Ks
+    results = []
+    output_file = os.path.join(args.output, 'kaks_values.tsv')
+    
+    with open(output_file, 'w') as f:
+        f.write('Sequence\tMethod\tKa\tKs\tKa_Ks\n')
+        
+        for name1, name2, seq1, seq2 in pairs:
+            # Validate sequences
+            if len(seq1) % 3 != 0 or len(seq2) % 3 != 0:
+                log(f"  Warning: {name1} {name2} - length not divisible by 3, skipping")
+                continue
+            
+            if len(seq1) != len(seq2):
+                log(f"  Warning: {name1} {name2} - unequal length, skipping")
+                continue
+            
+            # Calculate Ka/Ks
+            Ka, Ks, kaks = estimate_kaks_ng(seq1, seq2, args.genetic_code)
+            
+            ka_str = f"{Ka:.6f}" if Ka is not None else 'NA'
+            ks_str = f"{Ks:.6f}" if Ks is not None else 'NA'
+            kaks_str = f"{kaks:.6f}" if kaks is not None else 'NA'
+            
+            f.write(f"{name1}-{name2}\tNG-Python\t{ka_str}\t{ks_str}\t{kaks_str}\n")
+            results.append({'name': f"{name1}-{name2}", 'Ka': Ka, 'Ks': Ks, 'Ka_Ks': kaks})
+    
+    log(f"Results saved: {output_file}")
+    
+    # Summary
+    valid = [r for r in results if r['Ka_Ks'] is not None and 0 < r['Ka_Ks'] < 5]
+    if valid:
+        kaks_vals = sorted([r['Ka_Ks'] for r in valid])
+        median = kaks_vals[len(kaks_vals)//2]
+        mean = sum(kaks_vals) / len(kaks_vals)
+        log(f"  Valid pairs: {len(valid)}/{len(results)}")
+        log(f"  Median Ka/Ks: {median:.4f}")
+        log(f"  Mean Ka/Ks: {mean:.4f}")
+    
+    log("Done!")
+
+
+def run_pangenome(args):
+    """Pan-genome mode: OrthoFinder + CDS input"""
     
     # Locate files
     orthogroups_file = os.path.join(args.orthogroups_dir, 'Orthogroups.tsv')

@@ -1,4 +1,4 @@
-# pgkit - Pan-genome Analysis Toolkit
+# pgkit - Pan-gene Family Analysis Toolkit
 
 A comprehensive Python toolkit for pan-genome analysis based on OrthoFinder output.
 
@@ -8,38 +8,38 @@ A comprehensive Python toolkit for pan-genome analysis based on OrthoFinder outp
 - **Gene Family Classification**: Core, Soft-core, Dispensable, Private
 - **Saturation Curve**: Core/Pan gene family growth curve
 - **Visualization**: Pie, Bar, Heatmap, Saturation Curve (R scripts included)
-- **Ka/Ks Calculation**: Selection pressure analysis with multi-threading support
+- **Ka/Ks Calculation**: Selection pressure analysis (standalone + pan-genome mode)
 - **Statistics Report**: Comprehensive summary
 
 ## Installation
 
-### Method 1: Mamba (Recommended)
-
 ```bash
-# Create environment
+git clone https://github.com/WWz33/pgkit.git
+cd pgkit
 mamba env create -f environment.yml -n pgkit
-
-# Activate
-conda activate pgkit
-```
-
-### Method 2: Pip only (Python part only)
-
-```bash
-pip install biopython
-```
-
-### Optional: KaKs_Calculator
-
-```bash
-# Via conda
-mamba install -c bioconda kakscalculator2 -y
-
-# Or download from GitHub
-# https://github.com/kullrich/kakscalculator2
+mamba activate pgkit
 ```
 
 ## Quick Start
+
+**Input: OrthoFinder output directory**
+
+```
+Orthogroups/
+├── Orthogroups.tsv                    # Main orthogroup assignments
+├── Orthogroups.txt                    # Orthogroup gene lists
+├── Orthogroups.GeneCount.tsv          # Gene count matrix
+├── Orthogroups_SingleCopyOrthologues.txt  # Single-copy orthogroups
+├── Orthogroups_UnassignedGenes.tsv    # Unassigned genes
+└── Orthogroup_Sequences/              # Protein FASTA files (for Ka/Ks)
+    ├── OG0000000.fa
+    ├── OG0000001.fa
+    └── ...
+```
+
+**Commands:**
+
+**Note**: `all.cds.fa` is a superset containing all CDS sequences for all genes across all species. kaks.py extracts only the CDS corresponding to genes present in Orthogroups.
 
 ```bash
 # 1. Build PAV matrix + classification + auto visualization
@@ -179,39 +179,65 @@ Options:
 
 ### kaks - Ka/Ks Calculation
 
-Calculate Ka/Ks (non-synonymous/synonymous substitution rates) for different gene family categories.
+Calculate Ka/Ks (non-synonymous/synonymous substitution rates). Supports two modes:
+
+1. **Standalone mode** (`-i input.axt`): Direct AXT input, equivalent to KaKs_Calculator 3.0
+2. **Pan-genome mode** (orthogroups_dir + cds_file): Random sampling by gene family category
+
+**Pan-genome mode workflow:**
+```
+1. Load protein from Orthogroup_Sequences/ (consistent with OrthoFinder clustering)
+2. Extract matching CDS from all.cds.fa (by gene ID)
+3. Protein alignment (MUSCLE/MAFFT)
+4. Back-translate to CDS alignment
+5. Calculate Ka/Ks
+```
+
+**Note**: `all.cds.fa` is a superset containing all CDS sequences for all genes across all species. kaks.py extracts only the CDS corresponding to genes present in Orthogroups.
+
+**Note**: `kaks.py` is a Python reimplementation of [KaKs_Calculator 3.0](https://github.com/kullrich/kakscalculator2) (Zhang et al., 2021). It supports all methods from KaKs_Calculator 3.0 including Model Averaging (MA) and Model Selection (MS), with built-in Python fallback (Nei-Gojobori) when KaKs_Calculator is not available. Use `-k` flag to call external KaKs_Calculator 3.0 executable for maximum accuracy.
+
+**AXT Format:**
+```
+seq1_name seq2_name
+ATGCGTACGTAGCTAGC...
+ATGCGTACGTAGCTAGC...
+<blank line>
+```
 
 ```bash
+# Standalone mode
+python pgkit/src/kaks.py -i pairs.axt -o kaks_output [options]
+
+# Pan-genome mode
 python pgkit/src/kaks.py <orthogroups_dir> <cds_file> [options]
 
-Positional:
-  orthogroups_dir       OrthoFinder output directory
-  cds_file              Single FASTA file containing all CDS sequences
-
 Options:
+  -i, --input           Standalone: input AXT file
   -o, --output          Output directory (default: kaks_results)
-  -n, --n-genes         Orthogroups to sample per category (default: 50)
-  -p, --n-pairs         Species pairs per orthogroup (default: 50)
+  -n, --n-genes         Pan-genome: orthogroups to sample per category (default: 50)
+  -p, --n-pairs         Pan-genome: species pairs per orthogroup (default: 50)
   -t, --threads         Number of threads (default: 1)
   -s, --seed            Random seed (default: 42)
   -T, --threshold       Soft-core threshold (default: 0.9)
   -c, --genetic-code    Genetic code table 1-33 (default: 1=universal)
   -m, --method          Ka/Ks method: NG, LWL, LPB, GY, YN, MYN, MS, MA (default: MA)
-  -k, --use-kaks-calculator   Use KaKs_Calculator if available
-  -C, --calculator-path       Path to KaKs_Calculator executable
+  -k, --use-kaks-calculator   Call external KaKs_Calculator 3.0 (more accurate)
+  -C, --calculator-path       Path to KaKs_Calculator 3.0 executable
   --check-ids           Only check CDS/protein ID matching, then exit
 ```
 
 **Example:**
 ```bash
-# Basic (Python fallback)
+# Standalone mode (like KaKs_Calculator 3.0)
+python pgkit/src/kaks.py -i pairs.axt -o kaks_output -m MA
+python pgkit/src/kaks.py -i pairs.axt -o kaks_output -m YN -t 8
+
+# Pan-genome mode (Python fallback)
 python pgkit/src/kaks.py Orthogroups/ all.cds.fa -n 50 -p 50
 
-# With KaKs_Calculator 3.0 (Model Averaging)
+# Pan-genome mode with KaKs_Calculator 3.0
 python pgkit/src/kaks.py Orthogroups/ all.cds.fa -t 8 -m MA -k
-
-# With specific genetic code (mitochondrial)
-python pgkit/src/kaks.py Orthogroups/ all.cds.fa -c 2 -k
 ```
 
 **Output:**
@@ -233,18 +259,20 @@ kaks_results/
 | **Dispensable** | Present in some samples | 62 orthogroups |
 | **Private** | Present in single sample | 25 orthogroups |
 
-## KaKs_Calculator 3.0 Methods
+## KaKs_Calculator 3.0 Compatible Methods
 
-| Method | Reference | Description |
-|--------|-----------|-------------|
-| **NG** | Nei & Gojobori (1986) | Simple, fast |
-| **LWL** | Li, Wu & Luo (1985) | Weighted sites |
-| **LPB** | Li (1993), Pamilo & Bianchi (1993) | Improved weighting |
-| **GY** | Goldman & Yang (1994) | ML, codon model |
-| **YN** | Yang & Nielsen (2000) | ML, HKY model |
-| **MYN** | Zhang, Li & Yu (2006) | Modified YN |
-| **MS** | Zhang et al. (2006) | Model Selection (v3.0) |
-| **MA** | Zhang et al. (2006) | Model Averaging (v3.0) [DEFAULT] |
+`kaks.py` supports all methods from KaKs_Calculator 3.0 (Zhang et al., 2021):
+
+| Method | Reference | Description | v3.0 |
+|--------|-----------|-------------|------|
+| **NG** | Nei & Gojobori (1986) | Simple, fast | ✓ |
+| **LWL** | Li, Wu & Luo (1985) | Weighted sites | ✓ |
+| **LPB** | Li (1993), Pamilo & Bianchi (1993) | Improved weighting | ✓ |
+| **GY** | Goldman & Yang (1994) | ML, codon model | ✓ |
+| **YN** | Yang & Nielsen (2000) | ML, HKY model | ✓ |
+| **MYN** | Zhang, Li & Yu (2006) | Modified YN | ✓ |
+| **MS** | Zhang et al. (2006) | Model Selection | ✓ (v3.0) |
+| **MA** | Zhang et al. (2006) | Model Averaging | ✓ (v3.0) [DEFAULT] |
 
 ## R Visualization Scripts
 
@@ -298,25 +326,6 @@ pgkit/
         ├── plot_hist_ring.R
         └── plot_halfviolin.R
 ```
-
-## Dependencies
-
-All dependencies can be installed via `mamba env create -f environment.yml`.
-
-| Package | Type | Purpose |
-|---------|------|---------|
-| python>=3.8 | Core | Runtime |
-| biopython>=1.79 | Core | Sequence processing |
-| r-base>=4.1 | Core | Visualization |
-| r-ggplot2 | Core | Plotting |
-| r-pheatmap | Core | Heatmap |
-| r-ggdendro | Core | Dendrogram |
-| bioconductor-complexheatmap | Optional | Enhanced heatmap |
-| orthofinder | Optional | Gene family clustering |
-| muscle / mafft | Optional | Sequence alignment |
-| seqkit | Optional | Sequence processing |
-| KaKs_Calculator | Optional | Ka/Ks calculation |
-| ParaAT | Optional | Codon alignment |
 
 ## References
 
