@@ -25,16 +25,22 @@ mamba activate pgkit
 **Input: OrthoFinder output directory**
 
 ```
-Orthogroups/
-├── Orthogroups.tsv                    # Main orthogroup assignments
-├── Orthogroups.txt                    # Orthogroup gene lists
-├── Orthogroups.GeneCount.tsv          # Gene count matrix
-├── Orthogroups_SingleCopyOrthologues.txt  # Single-copy orthogroups
-├── Orthogroups_UnassignedGenes.tsv    # Unassigned genes
-└── Orthogroup_Sequences/              # Protein FASTA files (for Ka/Ks)
-    ├── OG0000000.fa
-    ├── OG0000001.fa
-    └── ...
+OrthoFinder_Results/
+├── Orthogroups/
+│   ├── Orthogroups.tsv                    # Main orthogroup assignments
+│   ├── Orthogroups.txt                    # Orthogroup gene lists
+│   ├── Orthogroups.GeneCount.tsv          # Gene count matrix
+│   ├── Orthogroups_SingleCopyOrthologues.txt  # Single-copy orthogroups
+│   └── Orthogroups_UnassignedGenes.tsv    # Unassigned genes
+├── Orthogroup_Sequences/                  # Protein FASTA files
+│   ├── OG0000000.fa
+│   ├── OG0000001.fa
+│   └── ...
+├── Comparative_Genomics_Statistics/
+├── Gene_Duplication_Events/
+├── Gene_Trees/
+├── MultipleSequenceAlignments/
+└── Orthologues/
 ```
 
 **Commands:**
@@ -51,7 +57,7 @@ python pgkit/pgkit.py curve results/pav_matrix.tsv -o results -s 100
 # 3. Generate statistics report
 python pgkit/pgkit.py stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
 
-# 4. Calculate Ka/Ks
+# 4. Calculate Ka/Ks (pass Orthogroups/ or parent directory)
 python pgkit/src/kaks.py Orthogroups/ all.cds.fa -t 8 -m MA -k
 ```
 

@@ -883,20 +883,41 @@ def run_standalone(args):
 def run_pangenome(args):
     """Pan-genome mode: OrthoFinder + CDS input"""
     
-    # Locate files
+    # Locate Orthogroups.tsv
     orthogroups_file = os.path.join(args.orthogroups_dir, 'Orthogroups.tsv')
-    seq_dir = os.path.join(args.orthogroups_dir, 'Orthogroup_Sequences')
     
     if not os.path.exists(orthogroups_file):
         for pat in [os.path.join(args.orthogroups_dir, '**/Orthogroups.tsv')]:
             found = glob.glob(pat, recursive=True)
             if found:
                 orthogroups_file = found[0]
-                seq_dir = os.path.join(os.path.dirname(orthogroups_file), 'Orthogroup_Sequences')
                 break
     
     check_file(orthogroups_file, "Orthogroups.tsv")
-    check_file(seq_dir, "Orthogroup_Sequences/")
+    
+    # Locate Orthogroup_Sequences/ (same level as Orthogroups/)
+    # OrthoFinder structure:
+    #   Orthogroups/
+    #   Orthogroup_Sequences/
+    orthogroups_dir = os.path.dirname(orthogroups_file)
+    parent_dir = os.path.dirname(orthogroups_dir)
+    
+    seq_dir = None
+    for candidate in [
+        os.path.join(parent_dir, 'Orthogroup_Sequences'),  # same level as Orthogroups/
+        os.path.join(args.orthogroups_dir, 'Orthogroup_Sequences'),  # input dir itself
+    ]:
+        if os.path.isdir(candidate):
+            seq_dir = candidate
+            break
+    
+    if seq_dir is None:
+        log("ERROR: Orthogroup_Sequences/ not found!")
+        log(f"  Searched: {parent_dir}/Orthogroup_Sequences")
+        log(f"  Searched: {args.orthogroups_dir}/Orthogroup_Sequences")
+        sys.exit(1)
+    
+    log(f"  Orthogroup_Sequences: {seq_dir}")
     check_file(args.cds_file, "CDS file")
     
     # Parse Orthogroups
