@@ -1,0 +1,2 @@
+# pgkit Python dependencies
+biopython>=1.79

@@ -1,0 +1,27 @@
+name: pgkit
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+
+dependencies:
+  # Core
+  - python>=3.8
+  - pip
+  - r-base>=4.1
+  - r-ggplot2>=3.4
+  - r-pheatmap
+  - r-ggdendro
+
+  # Optional R packages
+  - bioconductor-complexheatmap
+
+  # Optional bioinformatics tools
+  - orthofinder
+  - muscle
+  - mafft
+  - seqkit
+
+  # Python packages
+  - pip:
+    - biopython>=1.79
