@@ -79,7 +79,7 @@ def run(args):
     log(f"Data saved: {data_file}")
 
     # Call R script
-    r_script = os.path.join(os.path.dirname(__file__), '..', 'scripts', 'plot_curve.R')
+    r_script = os.path.join(os.path.dirname(__file__), 'scripts', 'plot_curve.R')
     out_prefix = os.path.join(args.output, 'curve')
 
     log("Generating saturation curve plot...")

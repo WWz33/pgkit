@@ -49,16 +49,16 @@ OrthoFinder_Results/
 
 ```bash
 # 1. Build PAV matrix + classification + auto visualization
-python pgkit/pgkit.py pav Orthogroups/ -o results
+pgkit pav Orthogroups/ -o results
 
 # 2. Generate saturation curve
-python pgkit/pgkit.py curve results/pav_matrix.tsv -o results -s 100
+pgkit curve results/pav_matrix.tsv -o results -s 100
 
 # 3. Generate statistics report
-python pgkit/pgkit.py stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
+pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
 
-# 4. Calculate Ka/Ks (pass Orthogroups/ or parent directory)
-python pgkit/src/kaks.py Orthogroups/ all.cds.fa -t 8 -m MA -k
+# 4. Calculate Ka/Ks (separate command, not in pav workflow)
+pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
 ```
 
 ## Commands
@@ -183,9 +183,9 @@ Options:
   -o, --output          Output directory (default: pgkit_output)
 ```
 
-### kaks - Ka/Ks Calculation
+### kaks - Ka/Ks Calculation (Separate Command)
 
-Calculate Ka/Ks (non-synonymous/synonymous substitution rates). Supports two modes:
+Calculate Ka/Ks (non-synonymous/synonymous substitution rates). This is a separate command, not part of the `pav` workflow.
 
 1. **Standalone mode** (`-i input.axt`): Direct AXT input, equivalent to KaKs_Calculator 3.0
 2. **Pan-genome mode** (orthogroups_dir + cds_file): Random sampling by gene family category
@@ -213,10 +213,10 @@ ATGCGTACGTAGCTAGC...
 
 ```bash
 # Standalone mode
-python pgkit/src/kaks.py -i pairs.axt -o kaks_output [options]
+pgkit kaks -i pairs.axt -o kaks_output [options]
 
 # Pan-genome mode
-python pgkit/src/kaks.py <orthogroups_dir> <cds_file> [options]
+pgkit kaks <orthogroups_dir> <cds_file> [options]
 
 Options:
   -i, --input           Standalone: input AXT file
@@ -236,14 +236,14 @@ Options:
 **Example:**
 ```bash
 # Standalone mode (like KaKs_Calculator 3.0)
-python pgkit/src/kaks.py -i pairs.axt -o kaks_output -m MA
-python pgkit/src/kaks.py -i pairs.axt -o kaks_output -m YN -t 8
+pgkit kaks -i pairs.axt -o kaks_output -m MA
+pgkit kaks -i pairs.axt -o kaks_output -m YN -t 8
 
 # Pan-genome mode (Python fallback)
-python pgkit/src/kaks.py Orthogroups/ all.cds.fa -n 50 -p 50
+pgkit kaks Orthogroups/ all.cds.fa -n 50 -p 50
 
 # Pan-genome mode with KaKs_Calculator 3.0
-python pgkit/src/kaks.py Orthogroups/ all.cds.fa -t 8 -m MA -k
+pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
 ```
 
 **Output:**

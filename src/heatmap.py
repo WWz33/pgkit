@@ -31,7 +31,7 @@ def run(args):
     log(f"Matrix dimensions: {n_genes} genes x {n_samples} samples")
 
     # Call R script
-    r_script = os.path.join(os.path.dirname(__file__), '..', 'scripts', 'plot_heatmap.R')
+    r_script = os.path.join(os.path.dirname(__file__), 'scripts', 'plot_heatmap.R')
     out_prefix = os.path.join(args.output, 'heatmap')
 
     cmd = ['Rscript', os.path.abspath(r_script), args.pav, out_prefix]

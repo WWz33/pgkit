@@ -105,7 +105,7 @@ def parse_unassigned_to_orthogroups_format(unassigned_file):
 
 def run_r_script(script_name, args_list):
     """Run an R script"""
-    r_script = os.path.join(os.path.dirname(__file__), '..', 'scripts', script_name)
+    r_script = os.path.join(os.path.dirname(__file__), 'scripts', script_name)
     cmd = ['Rscript', os.path.abspath(r_script)] + args_list
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
@@ -124,7 +124,7 @@ def run_r_script(script_name, args_list):
 
 def copy_r_scripts(output_dir):
     """Copy R scripts to output directory"""
-    scripts_dir = os.path.join(os.path.dirname(__file__), '..', 'scripts')
+    scripts_dir = os.path.join(os.path.dirname(__file__), 'scripts')
     dst_dir = os.path.join(output_dir, 'r_scripts')
     ensure_dir(dst_dir)
 

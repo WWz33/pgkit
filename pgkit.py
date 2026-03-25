@@ -33,17 +33,17 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src import pav, curve, pie, bar, heatmap, stats
+from src import pav, curve, pie, bar, heatmap, stats, kaks
 
 
 def main():
     parser = argparse.ArgumentParser(
         prog='pgkit',
-        description='Pan-genome analysis toolkit',
+        description='Pan-gene Family Analysis Toolkit',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Workflow:
-  1. pav     Build PAV matrix + classification (auto-detect directory)
+  1. pav     Build PAV matrix + classification + visualization
   2. curve   Saturation curve analysis (optional)
   3. pie     Pie chart visualization
   4. bar     Bar chart visualization
@@ -68,6 +68,7 @@ Examples:
     bar.register(subparsers)
     heatmap.register(subparsers)
     stats.register(subparsers)
+    kaks.register(subparsers)
 
     args = parser.parse_args()
 

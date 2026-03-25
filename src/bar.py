@@ -30,7 +30,7 @@ def run(args):
     log(f"Samples: {n_samples}")
 
     # Call R script
-    r_script = os.path.join(os.path.dirname(__file__), '..', 'scripts', 'plot_bar.R')
+    r_script = os.path.join(os.path.dirname(__file__), 'scripts', 'plot_bar.R')
     out_prefix = os.path.join(args.output, 'bar')
     stacked = "TRUE" if args.stacked else "FALSE"
 

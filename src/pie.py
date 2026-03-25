@@ -37,7 +37,7 @@ def run(args):
         log(f"  {cat}: {count} ({count/total*100:.1f}%)")
 
     # Call R script
-    r_script = os.path.join(os.path.dirname(__file__), '..', 'scripts', 'plot_pie.R')
+    r_script = os.path.join(os.path.dirname(__file__), 'scripts', 'plot_pie.R')
     out_prefix = os.path.join(args.output, 'pie')
 
     log("Generating pie chart...")

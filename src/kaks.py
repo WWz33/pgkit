@@ -685,6 +685,56 @@ if (length(unique(df$Category)) > 1) {{
 
 
 # ============================================================
+# Subcommand registration (for pgkit.py)
+# ============================================================
+def register(subparsers):
+    """Register kaks subcommand"""
+    p = subparsers.add_parser('kaks', help='Ka/Ks calculation (KaKs_Calculator 3.0 compatible)')
+    p.add_argument('-i', '--input', dest='axt_input', default=None,
+                   help='Standalone mode: input AXT file')
+    p.add_argument('orthogroups_dir', nargs='?', default=None,
+                   help='OrthoFinder output directory (pan-genome mode)')
+    p.add_argument('cds_file', nargs='?', default=None,
+                   help='CDS FASTA file (pan-genome mode)')
+    p.add_argument('-o', '--output', default='kaks_results',
+                   help='Output directory (default: kaks_results)')
+    p.add_argument('-n', '--n-genes', type=int, default=50,
+                   help='Orthogroups to sample per category (default: 50)')
+    p.add_argument('-p', '--n-pairs', type=int, default=50,
+                   help='Species pairs per orthogroup (default: 50)')
+    p.add_argument('-t', '--threads', type=int, default=1,
+                   help='Number of threads (default: 1)')
+    p.add_argument('-s', '--seed', type=int, default=42,
+                   help='Random seed (default: 42)')
+    p.add_argument('-T', '--threshold', type=float, default=0.9,
+                   help='Soft-core threshold (default: 0.9)')
+    p.add_argument('-c', '--genetic-code', type=int, default=1,
+                   help='Genetic code table 1-33 (default: 1=universal)')
+    p.add_argument('-m', '--method', default='MA',
+                   choices=list(KAKS_METHODS.keys()),
+                   help='Ka/Ks method (default: MA)')
+    p.add_argument('-k', '--use-kaks-calculator', action='store_true',
+                   help='Use KaKs_Calculator if available')
+    p.add_argument('-C', '--calculator-path', default=None,
+                   help='Path to KaKs_Calculator executable')
+    p.add_argument('--check-ids', action='store_true',
+                   help='Only check CDS/protein ID matching, then exit')
+    p.set_defaults(func=run_cli)
+
+
+def run_cli(args):
+    """Entry point for subcommand"""
+    # Convert argparse namespace to work with main logic
+    if args.axt_input:
+        run_standalone(args)
+    elif args.orthogroups_dir and args.cds_file:
+        run_pangenome(args)
+    else:
+        print("Error: Either -i (AXT input) or orthogroups_dir + cds_file required")
+        sys.exit(1)
+
+
+# ============================================================
 # Main
 # ============================================================
 def main():
