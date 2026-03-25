@@ -50,7 +50,7 @@ def run(args):
     results = []
 
     for k in range(1, n + 1):
-        if args.simulations == 0:
+        if args.simulations <= 1:
             combos = list(itertools.combinations(species_list, k))
             if len(combos) > 10000:
                 log(f"  n={k}: {len(combos)} combinations too many, using random sampling")
@@ -58,24 +58,28 @@ def run(args):
         else:
             combos = [tuple(random.sample(species_list, k)) for _ in range(args.simulations)]
 
-        core_sum = 0
-        pan_sum = 0
+        core_vals = []
+        pan_vals = []
         for combo in combos:
             c, p = calc_core_pan(pav_dict, combo)
-            core_sum += c
-            pan_sum += p
+            core_vals.append(c)
+            pan_vals.append(p)
 
-        core_avg = core_sum / len(combos)
-        pan_avg = pan_sum / len(combos)
-        results.append((k, core_avg, pan_avg))
-        log(f"  n={k}: core={core_avg:.1f}, pan={pan_avg:.1f}")
+        core_avg = sum(core_vals) / len(core_vals)
+        pan_avg = sum(pan_vals) / len(pan_vals)
+        
+        core_sd = (sum((v - core_avg) ** 2 for v in core_vals) / len(core_vals)) ** 0.5
+        pan_sd = (sum((v - pan_avg) ** 2 for v in pan_vals) / len(pan_vals)) ** 0.5
 
-    # Save data
+        results.append((k, core_avg, pan_avg, core_sd, pan_sd))
+        log(f"  n={k}: core={core_avg:.1f}+/-{core_sd:.1f}, pan={pan_avg:.1f}+/-{pan_sd:.1f}")
+
+    # Save data with SD
     data_file = os.path.join(args.output, 'saturation_curve.tsv')
     with open(data_file, 'w') as f:
-        f.write('n_accessions\tcore\tpan\n')
-        for k, core, pan in results:
-            f.write(f'{k}\t{core:.1f}\t{pan:.1f}\n')
+        f.write('n_accessions\tcore\tpan\tcore_sd\tpan_sd\n')
+        for k, core, pan, csd, psd in results:
+            f.write(f'{k}\t{core:.1f}\t{pan:.1f}\t{csd:.1f}\t{psd:.1f}\n')
     log(f"Data saved: {data_file}")
 
     # Call R script
