@@ -1,24 +1,25 @@
 """
-基因家族分类
+Gene family classification
 """
+import math
 
 
 def classify_orthogroups(orthogroups, species_list, soft_core_threshold=0.9):
     """
-    根据存在频率对orthogroup进行分类
+    Classify orthogroups by presence frequency
     
-    分类标准:
-        - Core: 100% 样本存在
-        - Soft-core: >=90% 样本存在
-        - Dispensable: >1 样本但 <90%
-        - Private: 仅1个样本存在
+    Categories:
+        - Core: 100% samples present
+        - Soft-core: >=threshold (default 90%) samples present
+        - Dispensable: >1 sample but <threshold
+        - Private: only 1 sample present
     
-    返回:
+    Returns:
         categories: dict {category: [og_ids]}
         species_counts: dict {og_id: count}
     """
     total = len(species_list)
-    soft_core_min = int(total * soft_core_threshold)
+    soft_core_min = math.ceil(total * soft_core_threshold)
 
     categories = {'core': [], 'soft_core': [], 'dispensable': [], 'private': []}
     species_counts = {}
