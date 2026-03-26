@@ -20,9 +20,16 @@ if (!require("ggplot2", quietly = TRUE)) {
 }
 library(ggplot2)
 
-# Source palette
-script_dir <- tryCatch(dirname(normalizePath(sys.frame(1)$ofile)), error = function(e) ".")
-source(file.path(script_dir, "palette.R"))
+# Default category colors (can be overridden by palette.R)
+CATEGORY_COLORS <- c(
+  Core = "#f78d85",
+  Softcore = "#ffc725",
+  Dispensable = "#48b6a6",
+  Private = "#8d9dc7"
+)
+
+# Source palette if available
+tryCatch(source(file.path(dirname(commandArgs(trailingOnly = FALSE)[grep("--file=", commandArgs(trailingOnly = FALSE))]), "palette.R")), error = function(e) NULL)
 
 # Read frequency table
 df <- read.delim(freq_file)
