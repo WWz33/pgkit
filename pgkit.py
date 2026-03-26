@@ -33,7 +33,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src import pav, curve, pie, bar, heatmap, stats, kaks
+from src import run, pav, curve, pie, bar, heatmap, stats, kaks
 
 
 def main():
@@ -42,26 +42,27 @@ def main():
         description='Pan-gene Family Analysis Toolkit',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Workflow:
-  1. pav     Build PAV matrix + classification + visualization
-  2. curve   Saturation curve analysis (optional)
-  3. pie     Pie chart visualization
-  4. bar     Bar chart visualization
-  5. heatmap Heatmap visualization
-  6. stats   Statistics report
-  7. kaks    Ka/Ks calculation
+Commands:
+  run     Full pipeline: PAV + curve + visualization
+  pav     Build PAV matrix + classification + visualization
+  curve   Saturation curve analysis
+  pie     Pie chart
+  bar     Bar chart
+  heatmap Heatmap visualization (supports --pop for population annotation)
+  stats   Statistics report
+  kaks    Ka/Ks calculation
 
 Examples:
-  pgkit pav Orthogroups/ -o results
-  pgkit pav Orthogroups/ -o results -f pdf -r
-  pgkit curve results/pav_matrix.tsv -o results -s 100
-  pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
+  pgkit run Orthogroups/ -o results
+  pgkit pav Orthogroups/ -o results -f pdf
+  pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -P pop.tsv
   pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
 """
     )
 
     subparsers = parser.add_subparsers(dest='command', help='Subcommand')
 
+    run.register(subparsers)
     pav.register(subparsers)
     curve.register(subparsers)
     pie.register(subparsers)

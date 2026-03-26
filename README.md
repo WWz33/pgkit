@@ -4,10 +4,11 @@ A comprehensive Python toolkit for pan-genome analysis based on OrthoFinder outp
 
 ## Features
 
+- **Full Pipeline**: `pgkit run` combines PAV + curve + visualization
 - **PAV Matrix Construction**: Auto-detect OrthoFinder output, merge UnassignedGenes
 - **Gene Family Classification**: Core, Soft-core, Dispensable, Private
-- **Saturation Curve**: Core/Pan gene family growth curve
-- **Visualization**: Pie, Bar, Heatmap, Saturation Curve (R scripts included)
+- **Saturation Curve**: Core/Pan gene family growth curve with Heaps' law fitting
+- **Visualization**: Pie+Histogram, Bar, Heatmap (with population annotation)
 - **Ka/Ks Calculation**: Selection pressure analysis (standalone + pan-genome mode)
 - **Statistics Report**: Comprehensive summary
 
@@ -48,20 +49,46 @@ OrthoFinder_Results/
 **Note**: `all.cds.fa` is a superset containing all CDS sequences for all genes across all species. kaks.py extracts only the CDS corresponding to genes present in Orthogroups.
 
 ```bash
-# 1. Build PAV matrix + classification + auto visualization
+# Full pipeline (PAV + curve + visualization)
+pgkit run Orthogroups/ -o results
+
+# Or step by step:
 pgkit pav Orthogroups/ -o results
-
-# 2. Generate saturation curve
 pgkit curve results/pav_matrix.tsv -o results -s 100
-
-# 3. Generate statistics report
 pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
 
-# 4. Calculate Ka/Ks (separate command, not in pav workflow)
+# Ka/Ks (separate command)
 pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
+
+# Heatmap with population annotation
+pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -P pop.tsv
 ```
 
 ## Commands
+
+### run - Full Pipeline
+
+Run complete analysis: PAV + saturation curve + visualization.
+
+```bash
+pgkit run <input> [options]
+
+Positional:
+  input                 OrthoFinder output directory or Orthogroups.tsv file
+
+Options:
+  -o, --output          Output directory (default: pgkit_output)
+  -t, --threshold       Soft-core threshold (default: 0.9)
+  -f, --format          Image format: png, pdf, svg (default: png)
+  -s, --simulations     Simulations for curve (default: 100)
+  -r, --save-r          Save R scripts to output directory
+  -n, --no-plot         Skip visualization step
+```
+
+**Example:**
+```bash
+pgkit run Orthogroups/ -o results -f pdf -s 200
+```
 
 ### pav - PAV Matrix Construction
 
@@ -158,14 +185,28 @@ Options:
 Generate heatmap visualization of PAV matrix.
 
 ```bash
-python pgkit/pgkit.py heatmap <pav_matrix> [options]
+pgkit heatmap <pav_matrix> [options]
 
 Positional:
   pav_matrix            PAV matrix file (pav_matrix.tsv)
 
 Options:
-  -f, --frequency       Frequency table for row annotation (optional)
+  -f, --frequency       Frequency table for row annotation
+  -P, --pop             Population file (2-col TSV: species, group)
   -o, --output          Output directory (default: pgkit_output)
+```
+
+**Pop file format** (no header):
+```
+SpeciesA    Group1
+SpeciesB    Group1
+SpeciesC    Group2
+```
+
+**Example:**
+```bash
+pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results
+pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -P pop.tsv -o results
 ```
 
 ### stats - Statistics Report

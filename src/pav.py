@@ -248,8 +248,8 @@ def run(args):
 
         log(f"Generating visualizations (format: {fmt})...")
 
-        log("  Generating pie chart...")
-        run_r_script('plot_pie.R', [freq_file, out_prefix, fmt])
+        log("  Generating pie + histogram...")
+        run_r_script('plot_hist_ring.R', [freq_file, out_prefix])
 
         log("  Generating bar chart...")
         run_r_script('plot_bar.R', [count_file, out_prefix, stacked, fmt])

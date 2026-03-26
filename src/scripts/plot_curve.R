@@ -132,14 +132,10 @@ if (has_sd) {
     scale_fill_manual(values = colors)
 }
 
-# Add fitted curves
-p <- p +
-  geom_line(data = core_curve, aes(x = n_accessions, y = count, color = "Core (fitted)"),
-            linetype = "dashed", linewidth = 0.8) +
-  geom_line(data = pan_curve, aes(x = n_accessions, y = count, color = "Pan (fitted)"),
-            linetype = "dashed", linewidth = 0.8) +
+# Add original lines (no fitted curves)
+colors <- c("Core" = "#2E86AB", "Pan" = "#A23B72")
 
-  # Add original lines (no points)
+p <- p +
   geom_line(data = df_plot, aes(x = n_accessions, y = count, color = type),
             linewidth = 1.2) +
 
@@ -157,11 +153,6 @@ p <- p +
     plot.title = element_text(hjust = 0.5, face = "bold"),
     legend.position = "right"
   )
-
-# Add equation text
-eq_text <- paste0(pan_eq, "\n", core_eq)
-p <- p + annotate("text", x = n_max * 0.6, y = pan_max * 0.95,
-                  label = eq_text, hjust = 0, size = 3.5, fontface = "italic")
 
 # Save
 ggsave(paste0(out_prefix, ".curve.pdf"), p, width = 10, height = 6, dpi = 300)
