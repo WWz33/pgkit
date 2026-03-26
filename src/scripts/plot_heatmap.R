@@ -48,12 +48,12 @@ use_raster <- n_genes * n_samples > 100000
 
 # Colors
 cat_colors <- c(
-  core = "#F8766D",
-  soft_core = "#7CAE00",
-  dispensable = "#00BFC4",
-  private = "#C77CFF"
+  Core = "#f78d85",
+  Softcore = "#ffc725",
+  Dispensable = "#48b6a6",
+  Specific = "#8d9dc7"
 )
-pav_colors <- c("absence" = "#F0F0F0", "presence" = "#2166AC")
+pav_colors <- c("absence" = "#F0F0F0", "presence" = "#48b6a6")
 
 # ============================================================
 # Row annotation
@@ -77,7 +77,7 @@ if (!is.null(freq_file)) {
       border = FALSE,
       width = grid::unit(10, "mm"),
       gp = grid::gpar(fill = "#2166AC", col = NA),
-      axis_param = list(side = "left", gp = grid::gpar(fontsize = 7, fontface = "bold"))
+      axis_param = list(side = "bottom", gp = grid::gpar(fontsize = 7, fontface = "bold"))
     ),
     annotation_label = c("Category", "Presence\nCount"),
     annotation_name_side = "bottom",
@@ -90,7 +90,7 @@ if (!is.null(freq_file)) {
       border = FALSE,
       width = grid::unit(10, "mm"),
       gp = grid::gpar(fill = "#2166AC", col = NA),
-      axis_param = list(side = "left", gp = grid::gpar(fontsize = 7, fontface = "bold"))
+      axis_param = list(side = "bottom", gp = grid::gpar(fontsize = 7, fontface = "bold"))
     ),
     annotation_label = "Presence\nCount",
     annotation_name_side = "bottom",
@@ -126,7 +126,7 @@ if (!is.null(pop_file)) {
       border = FALSE,
       height = grid::unit(10, "mm"),
       gp = grid::gpar(fill = "#E41A1C", col = NA),
-      axis_param = list(side = "top", gp = grid::gpar(fontsize = 7, fontface = "bold"))
+      axis_param = list(side = "left", gp = grid::gpar(fontsize = 7, fontface = "bold"))
     ),
     annotation_label = c("Population", "Presence\nCount"),
     annotation_name_side = "right",
@@ -139,7 +139,7 @@ if (!is.null(pop_file)) {
       border = FALSE,
       height = grid::unit(10, "mm"),
       gp = grid::gpar(fill = "#E41A1C", col = NA),
-      axis_param = list(side = "top", gp = grid::gpar(fontsize = 7, fontface = "bold"))
+      axis_param = list(side = "left", gp = grid::gpar(fontsize = 7, fontface = "bold"))
     ),
     annotation_label = "Presence\nCount",
     annotation_name_side = "right",
@@ -153,8 +153,8 @@ if (!is.null(pop_file)) {
 row_split <- NULL
 row_title <- NULL
 if (!is.null(df_freq)) {
-  row_split <- factor(df_freq$Category, levels = c("core", "soft_core", "dispensable", "private"))
-  row_title <- c("Core", "Soft-core", "Dispensable", "Private")
+  row_split <- factor(df_freq$Category, levels = c("Core", "Softcore", "Dispensable", "Specific"))
+  row_title <- c("Core", "Softcore", "Dispensable", "Specific")
 }
 
 # ============================================================
@@ -169,7 +169,7 @@ fig_width <- max(10, n_samples * 0.25 + 5)
 lg <- list(
   ComplexHeatmap::Legend(
     labels = c("absence", "presence"),
-    legend_gp = grid::gpar(fill = c("#F0F0F0", "#2166AC")),
+    legend_gp = grid::gpar(fill = c("#F0F0F0", "#48b6a6")),
     title = "PAV",
     title_gp = grid::gpar(fontsize = 10, fontface = "bold"),
     labels_gp = grid::gpar(fontsize = 9, fontface = "bold")

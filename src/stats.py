@@ -53,12 +53,12 @@ def run(args):
         f.write("Category Statistics:\n")
         f.write("-" * 40 + "\n\n")
 
-        cat_order = ['core', 'soft_core', 'dispensable', 'private']
+        cat_order = ['Core', 'Softcore', 'Dispensable', 'Specific']
         cat_names = {
-            'core': 'Core (present in all samples)',
-            'soft_core': 'Soft-core (present in >=90% samples)',
-            'dispensable': 'Dispensable (present in some samples)',
-            'private': 'Private (present in single sample)'
+            'Core': 'Core (present in all samples)',
+            'Softcore': 'Softcore (present in >=90% samples)',
+            'Dispensable': 'Dispensable (present in some samples)',
+            'Specific': 'Specific (present in single sample)'
         }
 
         for cat in cat_order:
@@ -76,7 +76,7 @@ def run(args):
 
             with open(args.gene_count, 'r') as cf:
                 header = cf.readline().strip().split('\t')
-                f.write(f"  {'Species':<20} {'Core':<8} {'Soft':<8} {'Disp':<8} {'Priv':<8} {'Total':<8}\n")
+                f.write(f"  {'Species':<20} {'Core':<8} {'Soft':<8} {'Disp':<8} {'Spec':<8} {'Total':<8}\n")
                 f.write("  " + "-" * 60 + "\n")
                 for line in cf:
                     parts = line.strip().split('\t')

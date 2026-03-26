@@ -10,9 +10,9 @@ def classify_orthogroups(orthogroups, species_list, soft_core_threshold=0.9):
     
     Categories:
         - Core: 100% samples present
-        - Soft-core: >=threshold (default 90%) samples present
+        - Softcore: >=threshold (default 90%) samples present
         - Dispensable: >1 sample but <threshold
-        - Private: only 1 sample present
+        - Specific: only 1 sample present
     
     Returns:
         categories: dict {category: [og_ids]}
@@ -21,7 +21,7 @@ def classify_orthogroups(orthogroups, species_list, soft_core_threshold=0.9):
     total = len(species_list)
     soft_core_min = math.ceil(total * soft_core_threshold)
 
-    categories = {'core': [], 'soft_core': [], 'dispensable': [], 'private': []}
+    categories = {'Core': [], 'Softcore': [], 'Dispensable': [], 'Specific': []}
     species_counts = {}
 
     for og_id, og_data in orthogroups.items():
@@ -29,13 +29,13 @@ def classify_orthogroups(orthogroups, species_list, soft_core_threshold=0.9):
         species_counts[og_id] = count
 
         if count == total:
-            categories['core'].append(og_id)
+            categories['Core'].append(og_id)
         elif count >= soft_core_min:
-            categories['soft_core'].append(og_id)
+            categories['Softcore'].append(og_id)
         elif count == 1:
-            categories['private'].append(og_id)
+            categories['Specific'].append(og_id)
         else:
-            categories['dispensable'].append(og_id)
+            categories['Dispensable'].append(og_id)
 
     return categories, species_counts
 

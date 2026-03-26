@@ -2,11 +2,6 @@
 # =============================================================================
 # Histogram + Ring Chart Combined (APAVplot style)
 # =============================================================================
-# Features:
-#   - Histogram showing orthogroup distribution by species count
-#   - Ring chart overlay showing category proportions
-#   - Uses grid viewport for overlay
-#
 # Usage: Rscript plot_hist_ring.R <frequency_table.tsv> <output_prefix>
 # =============================================================================
 
@@ -19,29 +14,34 @@ if (length(args) < 2) {
 freq_file <- args[1]
 out_prefix <- args[2]
 
+# Load packages
 if (!require("ggplot2", quietly = TRUE)) {
   install.packages("ggplot2", repos = "https://cloud.r-project.org")
 }
 library(ggplot2)
 
+# Source palette
+palette_file <- file.path(dirname(commandArgs()[4]), "palette.R")
+if (file.exists(palette_file)) source(palette_file)
+
+# Category colors
+cat_colors <- c(
+  Core = "#f78d85",
+  Softcore = "#ffc725",
+  Dispensable = "#48b6a6",
+  Specific = "#8d9dc7"
+)
+
 # Read frequency table
 df <- read.delim(freq_file)
 
-# Category colors (APAVplot style)
-cat_colors <- c(
-  core = "#F8766D",
-  soft_core = "#7CAE00",
-  dispensable = "#00BFC4",
-  private = "#C77CFF"
-)
-
 # Category order
-cat_levels <- c("core", "soft_core", "dispensable", "private")
+cat_levels <- c("Core", "Softcore", "Dispensable", "Specific")
 df$Category <- factor(df$Category, levels = cat_levels)
 
 # ============================================================
 # Histogram: distribution by species count
-# Include all categories
+# ============================================================
 p_hist <- ggplot() +
   geom_bar(data = df, aes(x = Species_Count, y = ..count.., 
                           fill = factor(Category, levels = cat_levels)),
@@ -70,7 +70,7 @@ ring_data$per <- ring_data$Count / sum(ring_data$Count) * 100
 ring_data$Label <- paste0(ring_data$Category, "\n(", ring_data$Count, ", ", 
                           round(ring_data$per, 1), "%)")
 
-# Ring chart (for overlay)
+# Ring chart
 p_ring <- ggplot(ring_data, aes(x = x, y = 1, width = Count, height = 2)) +
   geom_tile(aes(fill = Category)) +
   geom_text(aes(y = 2.5, label = Label), size = 3, fontface = "bold") +
@@ -78,19 +78,10 @@ p_ring <- ggplot(ring_data, aes(x = x, y = 1, width = Count, height = 2)) +
   scale_y_continuous(limits = c(-2, 4)) +
   scale_fill_manual(values = cat_colors) +
   theme_void() +
-  theme(
-    axis.title = element_blank(),
-    axis.text = element_blank(),
-    axis.ticks = element_blank(),
-    axis.line = element_blank(),
-    panel.background = element_blank(),
-    plot.background = element_blank(),
-    panel.grid = element_blank(),
-    legend.position = "none"
-  )
+  theme(legend.position = "none")
 
 # ============================================================
-# Combined output using grid viewport (APAVplot style)
+# Combined output using grid viewport
 # ============================================================
 combined_png <- paste0(out_prefix, ".combined.png")
 combined_pdf <- paste0(out_prefix, ".combined.pdf")
