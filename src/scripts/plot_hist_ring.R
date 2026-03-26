@@ -1,11 +1,11 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# Pie + Histogram Combined (APAVplot style)
+# Histogram + Ring Chart Combined (APAVplot style)
 # =============================================================================
 # Features:
 #   - Histogram showing orthogroup distribution by species count
-#   - Ring chart showing category proportions
-#   - Combined in one figure
+#   - Ring chart overlay showing category proportions
+#   - Uses grid viewport for overlay
 #
 # Usage: Rscript plot_hist_ring.R <frequency_table.tsv> <output_prefix>
 # =============================================================================
@@ -27,7 +27,7 @@ library(ggplot2)
 # Read frequency table
 df <- read.delim(freq_file)
 
-# Category colors
+# Category colors (APAVplot style)
 cat_colors <- c(
   core = "#F8766D",
   soft_core = "#7CAE00",
@@ -35,23 +35,26 @@ cat_colors <- c(
   private = "#C77CFF"
 )
 
+# Category order
+cat_levels <- c("core", "soft_core", "dispensable", "private")
+df$Category <- factor(df$Category, levels = cat_levels)
+
 # ============================================================
 # Histogram: distribution by species count
-# ============================================================
-df_hist <- df
-df_hist$Category <- factor(df_hist$Category, levels = c("core", "soft_core", "dispensable", "private"))
-
-p_hist <- ggplot(df_hist, aes(x = Species_Count, fill = Category)) +
-  geom_histogram(binwidth = 1, alpha = 0.8, color = "white") +
-  scale_fill_manual(values = cat_colors, name = "Category") +
-  labs(x = "Number of Species", y = "Number of Orthogroups") +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+# Include all categories
+p_hist <- ggplot() +
+  geom_bar(data = df, aes(x = Species_Count, y = ..count.., 
+                          fill = factor(Category, levels = cat_levels)),
+           stat = "count", width = 0.8) +
   theme_classic() +
+  scale_fill_manual(values = cat_colors) +
+  labs(x = "Number of Species", y = "Count", fill = "Category") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.01))) +
   theme(
+    legend.position = "none",
     axis.text = element_text(size = 10, color = "black", face = "bold"),
-    axis.title = element_text(size = 12, color = "black", face = "bold"),
-    legend.title = element_text(face = "bold"),
-    legend.text = element_text(face = "bold")
+    axis.title = element_text(size = 12, color = "black", face = "bold")
   )
 
 # ============================================================
@@ -59,44 +62,54 @@ p_hist <- ggplot(df_hist, aes(x = Species_Count, fill = Category)) +
 # ============================================================
 ring_data <- as.data.frame(table(df$Category))
 colnames(ring_data) <- c("Category", "Count")
-ring_data$Proportion <- ring_data$Count / sum(ring_data$Count) * 100
-ring_data$Label <- paste0(ring_data$Category, "\n", ring_data$Count,
-                          " (", round(ring_data$Proportion, 1), "%)")
-ring_data$ymax <- cumsum(ring_data$Count)
-ring_data$ymin <- c(0, head(ring_data$ymax, -1))
+ring_data$Category <- factor(ring_data$Category, levels = cat_levels)
+ring_data <- ring_data[!is.na(ring_data$Count), ]
 
-# Ring chart
-p_ring <- ggplot(ring_data, aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = Category)) +
-  geom_rect(color = "white") +
-  geom_text(aes(x = 3.5, y = (ymax + ymin) / 2, label = Label),
-            size = 3, fontface = "bold") +
-  coord_polar(theta = "y") +
-  xlim(c(2, 4)) +
+ring_data$x <- ring_data$Count / 2 + c(0, head(cumsum(ring_data$Count), -1))
+ring_data$per <- ring_data$Count / sum(ring_data$Count) * 100
+ring_data$Label <- paste0(ring_data$Category, "\n(", ring_data$Count, ", ", 
+                          round(ring_data$per, 1), "%)")
+
+# Ring chart (for overlay)
+p_ring <- ggplot(ring_data, aes(x = x, y = 1, width = Count, height = 2)) +
+  geom_tile(aes(fill = Category)) +
+  geom_text(aes(y = 2.5, label = Label), size = 3, fontface = "bold") +
+  coord_polar("x") +
+  scale_y_continuous(limits = c(-2, 4)) +
   scale_fill_manual(values = cat_colors) +
   theme_void() +
-  theme(legend.position = "none")
+  theme(
+    axis.title = element_blank(),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.line = element_blank(),
+    panel.background = element_blank(),
+    plot.background = element_blank(),
+    panel.grid = element_blank(),
+    legend.position = "none"
+  )
 
 # ============================================================
-# Combined output using grid (no patchwork dependency)
+# Combined output using grid viewport (APAVplot style)
 # ============================================================
-combined_file_png <- paste0(out_prefix, ".combined.png")
-combined_file_pdf <- paste0(out_prefix, ".combined.pdf")
+combined_png <- paste0(out_prefix, ".combined.png")
+combined_pdf <- paste0(out_prefix, ".combined.pdf")
 
-# Save combined PNG
-png(combined_file_png, width = 14, height = 6, units = "in", res = 300)
+# Save PNG
+png(combined_png, width = 10, height = 6, units = "in", res = 300)
 grid::grid.newpage()
-grid::pushViewport(grid::viewport(layout = grid::grid.layout(1, 2, widths = c(2, 1))))
-print(p_hist, vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 1))
-print(p_ring, vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 2))
+print(p_hist)
+vp <- grid::viewport(x = 0.65, y = 0.65, width = 0.35, height = 0.5)
+print(p_ring, vp = vp)
 dev.off()
 
-# Save combined PDF
-pdf(combined_file_pdf, width = 14, height = 6)
+# Save PDF
+pdf(combined_pdf, width = 10, height = 6)
 grid::grid.newpage()
-grid::pushViewport(grid::viewport(layout = grid::grid.layout(1, 2, widths = c(2, 1))))
-print(p_hist, vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 1))
-print(p_ring, vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 2))
+print(p_hist)
+vp <- grid::viewport(x = 0.65, y = 0.65, width = 0.35, height = 0.5)
+print(p_ring, vp = vp)
 dev.off()
 
-cat("Saved:", combined_file_pdf, "\n")
-cat("Saved:", combined_file_png, "\n")
+cat("Saved:", combined_png, "\n")
+cat("Saved:", combined_pdf, "\n")

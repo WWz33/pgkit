@@ -73,7 +73,8 @@ if (!is.null(df_freq)) {
     df_freq$Category,
     col = cat_colors,
     border = FALSE,
-    width = unit(3, "mm")
+    width = unit(3, "mm"),
+    which = "row"
   )
 }
 
@@ -109,7 +110,8 @@ if (!is.null(pop_file)) {
     df_pop$Population,
     col = pop_colors,
     border = FALSE,
-    height = unit(3, "mm")
+    height = unit(3, "mm"),
+    which = "column"
   )
 }
 
