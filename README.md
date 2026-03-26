@@ -133,10 +133,17 @@ results/
 
 ### curve - Saturation Curve
 
-Generate Core/Pan gene family saturation curve.
+Generate Core/Pan gene family saturation curve with curve fitting.
+
+**Method**:
+1. For each sample count k (1 to n), randomly sample k species
+2. Calculate core (present in all k) and pan (present in at least 1) gene families
+3. Repeat N times (default: 100) to get mean ± SD
+4. Fit Heaps' law for pan-genome: `Pan = P1 * n^gamma + P2`
+5. Fit exponential decay for core-genome: `Core = C1 * exp(-C2 * n) + C3`
 
 ```bash
-python pgkit/pgkit.py curve <pav_matrix> [options]
+pgkit curve <pav_matrix> [options]
 
 Positional:
   pav_matrix            PAV matrix file (pav_matrix.tsv)
@@ -144,11 +151,6 @@ Positional:
 Options:
   -o, --output          Output directory (default: pgkit_output)
   -s, --simulations     Simulations per sample count (default: 100)
-```
-
-**Example:**
-```bash
-python pgkit/pgkit.py curve results/pav_matrix.tsv -o results -s 200
 ```
 
 ### pie - Pie Chart
@@ -228,16 +230,22 @@ Options:
 
 Calculate Ka/Ks (non-synonymous/synonymous substitution rates). This is a separate command, not part of the `pav` workflow.
 
+**Modes**:
 1. **Standalone mode** (`-i input.axt`): Direct AXT input, equivalent to KaKs_Calculator 3.0
 2. **Pan-genome mode** (orthogroups_dir + cds_file): Random sampling by gene family category
 
-**Pan-genome mode workflow:**
+**Pan-genome mode method** (Sun et al., 2022 Nature):
 ```
-1. Load protein from Orthogroup_Sequences/ (consistent with OrthoFinder clustering)
-2. Extract matching CDS from all.cds.fa (by gene ID)
-3. Protein alignment (MUSCLE/MAFFT)
-4. Back-translate to CDS alignment
-5. Calculate Ka/Ks
+1. Classify orthogroups into core/soft-core/dispensable/private
+2. Random sample N orthogroups from each category (default: 50)
+3. For each orthogroup, randomly select P species pairs (default: 50)
+4. For each pair:
+   - Load protein from Orthogroup_Sequences/ (consistent with clustering)
+   - Extract matching CDS from all.cds.fa (by gene ID)
+   - Protein alignment (MUSCLE/MAFFT)
+   - Back-translate to CDS alignment
+   - Calculate Ka/Ks using selected method
+5. Compare Ka/Ks distributions across categories (Kruskal-Wallis test)
 ```
 
 **Note**: `all.cds.fa` is a superset containing all CDS sequences for all genes across all species. kaks.py extracts only the CDS corresponding to genes present in Orthogroups.
