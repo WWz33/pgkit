@@ -1021,25 +1021,28 @@ def run_pangenome(args):
     # Check KaKs_Calculator availability
     use_calculator = args.use_kaks_calculator
     calc_path = None
-valid_calc_path = False
     
     if use_calculator:
         # Find calculator path
         calc_path = args.calculator_path
         if calc_path:
             calc_path = os.path.expanduser(calc_path)
-        if calc_path is None or not valid_calc_path:
+
+        if calc_path is None:
             for path in ['KaKs_Calculator', 'KaKs', 'KaKs.exe']:
-                if shutil.which(path):
-                    calc_path = path
+                resolved = shutil.which(path)
+                if resolved:
+                    calc_path = resolved
                     break
-        
-        if calc_path and os.path.exists(calc_path):
-    valid_calc_path = True
+        else:
+            resolved = shutil.which(calc_path)
+            if resolved:
+                calc_path = resolved
+
+        if calc_path:
             log(f"Using KaKs_Calculator: {calc_path} (method: {args.method})")
         else:
-            log("KaKs_Calculator not found or invalid path! Use -C to specify path")
-    sys.exit(1)
+            log("KaKs_Calculator not found! Use -C to specify path")
             log("  Example: -C /path/to/KaKs_Calculator-3.0/bin/KaKs")
             log("  Falling back to Python NG method")
             use_calculator = False
