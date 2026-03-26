@@ -558,11 +558,6 @@ def calculate_single_pair(args_tuple):
             
             generate_axt(g1, g2, cds1, cds2, axt_file)
             
-            # Debug: print command on first run
-            if not hasattr(run_kakscalculator, '_debug_printed'):
-                print(f"  [DEBUG] Running: {calculator_path} -i {axt_file} -o {kaks_file} -m {method}")
-                run_kakscalculator._debug_printed = True
-            
             success, msg = run_kakscalculator(axt_file, kaks_file, method, 
                                                genetic_code, calculator_path)
             
@@ -1025,21 +1020,26 @@ def run_pangenome(args):
     
     # Check KaKs_Calculator availability
     use_calculator = args.use_kaks_calculator
+    calc_path = None
+valid_calc_path = False
+    
     if use_calculator:
         # Find calculator path
         calc_path = args.calculator_path
         if calc_path:
             calc_path = os.path.expanduser(calc_path)
-        if calc_path is None:
+        if calc_path is None or not valid_calc_path:
             for path in ['KaKs_Calculator', 'KaKs', 'KaKs.exe']:
                 if shutil.which(path):
                     calc_path = path
                     break
         
         if calc_path and os.path.exists(calc_path):
+    valid_calc_path = True
             log(f"Using KaKs_Calculator: {calc_path} (method: {args.method})")
         else:
-            log("KaKs_Calculator not found! Use -C to specify path")
+            log("KaKs_Calculator not found or invalid path! Use -C to specify path")
+    sys.exit(1)
             log("  Example: -C /path/to/KaKs_Calculator-3.0/bin/KaKs")
             log("  Falling back to Python NG method")
             use_calculator = False
