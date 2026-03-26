@@ -557,6 +557,12 @@ def calculate_single_pair(args_tuple):
             kaks_file = os.path.join(pair_tmp, f"{g1}_{g2}.kaks")
             
             generate_axt(g1, g2, cds1, cds2, axt_file)
+            
+            # Debug: print command on first run
+            if not hasattr(run_kakscalculator, '_debug_printed'):
+                print(f"  [DEBUG] Running: {calculator_path} -i {axt_file} -o {kaks_file} -m {method}")
+                run_kakscalculator._debug_printed = True
+            
             success, msg = run_kakscalculator(axt_file, kaks_file, method, 
                                                genetic_code, calculator_path)
             
@@ -577,14 +583,8 @@ def calculate_single_pair(args_tuple):
                         'Akaike_Weight': r.get('Akaike_Weight'),
                         'Model': r.get('Model'),
                     }
-                else:
-                    # Parsing failed
-                    log(f"  Warning: Failed to parse KaKs_Calculator output for {g1}-{g2}")
-            else:
-                # Calculator failed
-                log(f"  Warning: KaKs_Calculator failed for {g1}-{g2}: {msg[:100]}")
             
-            # Calculator failed, return None
+            # Calculator failed - return None (no fallback)
             return None
         else:
             # Fallback: Python Nei-Gojobori
@@ -1098,6 +1098,15 @@ def run_pangenome(args):
     for cat in ['Core', 'Softcore', 'Dispensable', 'Private']:
         cat_count = sum(1 for r in results if r.get('Category') == cat)
         log(f"  {cat}: {cat_count} results")
+    
+    # Debug: show method distribution
+    methods = {}
+    for r in results:
+        m = r.get('Method', 'unknown')
+        methods[m] = methods.get(m, 0) + 1
+    log("  Methods used:")
+    for m, count in sorted(methods.items()):
+        log(f"    {m}: {count}")
     
     results_file = os.path.join(args.output, 'kaks_values.tsv')
     has_v3 = any(r.get('AICc') is not None for r in results)
