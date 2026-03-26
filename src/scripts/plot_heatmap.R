@@ -25,7 +25,7 @@ pop_file <- if (length(args) >= 4 && file.exists(args[4])) args[4] else NULL
 # Load packages
 if (!require("ComplexHeatmap", quietly = TRUE)) {
   if (!require("BiocManager", quietly = TRUE)) {
-    install.packages("BiocManager", repos = "https://cloud.r-project.org")
+    install.packages("BiocManager")
   }
   BiocManager::install("ComplexHeatmap")
 }
@@ -46,14 +46,13 @@ n_samples <- ncol(mat)
 # Determine raster for large matrices
 use_raster <- n_genes * n_samples > 100000
 
-# Colors
-cat_colors <- c(
-  Core = "#f78d85",
-  Softcore = "#ffc725",
-  Dispensable = "#48b6a6",
-  Specific = "#8d9dc7"
-)
-pav_colors <- c("absence" = "#F0F0F0", "presence" = "#48b6a6")
+# Source palette
+script_dir <- if (is.null(sys.frame(1)$ofile)) "." else dirname(sys.frame(1)$ofile)
+source(file.path(script_dir, "palette.R"))
+
+# Colors from palette
+cat_colors <- CATEGORY_COLORS
+pav_colors <- PAV_COLORS
 
 # ============================================================
 # Row annotation
@@ -169,7 +168,7 @@ fig_width <- max(10, n_samples * 0.25 + 5)
 lg <- list(
   ComplexHeatmap::Legend(
     labels = c("absence", "presence"),
-    legend_gp = grid::gpar(fill = c("#F0F0F0", "#48b6a6")),
+    legend_gp = grid::gpar(fill = unname(PAV_COLORS)),
     title = "PAV",
     title_gp = grid::gpar(fontsize = 10, fontface = "bold"),
     labels_gp = grid::gpar(fontsize = 9, fontface = "bold")

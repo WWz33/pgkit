@@ -16,21 +16,17 @@ out_prefix <- args[2]
 
 # Load packages
 if (!require("ggplot2", quietly = TRUE)) {
-  install.packages("ggplot2", repos = "https://cloud.r-project.org")
+  install.packages("ggplot2")
 }
 library(ggplot2)
 
 # Source palette
-palette_file <- file.path(dirname(commandArgs()[4]), "palette.R")
-if (file.exists(palette_file)) source(palette_file)
+script_dir <- if (is.null(sys.frame(1)$ofile)) "." else dirname(sys.frame(1)$ofile)
+source(file.path(script_dir, "palette.R"))
 
-# Category colors
-cat_colors <- c(
-  Core = "#f78d85",
-  Softcore = "#ffc725",
-  Dispensable = "#48b6a6",
-  Specific = "#8d9dc7"
-)
+# Category colors and levels
+cat_colors <- CATEGORY_COLORS
+cat_levels <- names(CATEGORY_COLORS)
 
 # Read frequency table
 df <- read.delim(freq_file)
@@ -46,12 +42,13 @@ p_hist <- ggplot() +
   geom_bar(data = df, aes(x = Species_Count, y = ..count.., 
                           fill = factor(Category, levels = cat_levels)),
            stat = "count", width = 0.8) +
-  theme_classic() +
+  theme_bw() +
   scale_fill_manual(values = cat_colors) +
   labs(x = "Number of Species", y = "Count", fill = "Category") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.05))) +
   scale_x_continuous(expand = expansion(mult = c(0, 0.01))) +
   theme(
+    panel.grid = element_blank(),
     legend.position = "none",
     axis.text = element_text(size = 10, color = "black", face = "bold"),
     axis.title = element_text(size = 12, color = "black", face = "bold")

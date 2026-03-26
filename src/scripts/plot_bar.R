@@ -16,17 +16,16 @@ out_prefix <- args[2]
 fmt <- if (length(args) >= 3) args[3] else "png"
 
 if (!require("ggplot2", quietly = TRUE)) {
-  install.packages("ggplot2", repos = "https://cloud.r-project.org")
+  install.packages("ggplot2")
 }
 library(ggplot2)
 
+# Source palette
+script_dir <- if (is.null(sys.frame(1)$ofile)) "." else dirname(sys.frame(1)$ofile)
+source(file.path(script_dir, "palette.R"))
+
 # Category colors
-cat_colors <- c(
-  Core = "#f78d85",
-  Softcore = "#ffc725",
-  Dispensable = "#48b6a6",
-  Specific = "#8d9dc7"
-)
+cat_colors <- CATEGORY_COLORS
 
 # Read gene count matrix
 df <- read.delim(count_file)
@@ -57,8 +56,9 @@ p <- ggplot(df_long, aes(x = Sample, y = Count, fill = Category)) +
     x = "Sample", y = "Number of Gene Families", fill = "Category",
     title = "Gene Family Composition by Sample"
   ) +
-  theme_classic(base_size = 12) +
+  theme_bw(base_size = 12) +
   theme(
+    panel.grid = element_blank(),
     axis.text.x = element_text(angle = 90, hjust = 1, size = 8, face = "bold"),
     axis.text.y = element_text(face = "bold"),
     plot.title = element_text(hjust = 0.5, face = "bold"),

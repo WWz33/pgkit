@@ -18,7 +18,7 @@ count_file <- args[1]
 out_prefix <- args[2]
 
 if (!require("ggplot2", quietly = TRUE)) {
-  install.packages("ggplot2", repos = "https://cloud.r-project.org")
+  install.packages("ggplot2")
 }
 
 # Read data
@@ -47,8 +47,9 @@ p <- ggplot() +
               width = 0.125, size = 2, alpha = 0.6, color = "#E41A1C") +
   scale_x_continuous(limits = c(-0.5, 0.5)) +
   labs(y = "Total Gene Count", title = "Gene Count Distribution") +
-  theme_classic() +
+  theme_bw() +
   theme(
+    panel.grid = element_blank(),
     axis.text.x = element_blank(),
     axis.title.x = element_blank(),
     axis.ticks.x = element_blank(),

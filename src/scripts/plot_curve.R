@@ -19,7 +19,7 @@ data_file <- args[1]
 out_prefix <- args[2]
 
 if (!require("ggplot2", quietly = TRUE)) {
-  install.packages("ggplot2", repos = "https://cloud.r-project.org")
+  install.packages("ggplot2")
 }
 library(ggplot2)
 
