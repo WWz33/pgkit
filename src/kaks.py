@@ -951,6 +951,11 @@ def run_standalone(args):
 def run_pangenome(args):
     """Pan-genome mode: OrthoFinder + CDS input"""
     
+    # Setup directories
+    ensure_dir(args.output)
+    tmp_dir = os.path.join(args.output, 'tmp')
+    ensure_dir(tmp_dir)
+    
     # Locate Orthogroups.tsv
     orthogroups_file = os.path.join(args.orthogroups_dir, 'Orthogroups.tsv')
     
@@ -1058,7 +1063,7 @@ def run_pangenome(args):
     log(f"Total pairs to analyze: {total_pairs}")
     
     # Check KaKs_Calculator availability
-    use_calculator = args.use_kakscalculator
+    use_calculator = args.use_kaks_calculator
     if use_calculator:
         success, _ = run_kakscalculator("", "/dev/null", args.method, 
                                          args.genetic_code, args.calculator_path)
