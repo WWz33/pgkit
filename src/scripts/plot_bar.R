@@ -21,7 +21,7 @@ if (!require("ggplot2", quietly = TRUE)) {
 library(ggplot2)
 
 # Source palette
-script_dir <- if (is.null(sys.frame(1)$ofile)) "." else dirname(sys.frame(1)$ofile)
+script_dir <- tryCatch(dirname(normalizePath(sys.frame(1)$ofile)), error = function(e) ".")
 source(file.path(script_dir, "palette.R"))
 
 # Category colors

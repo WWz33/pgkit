@@ -47,7 +47,7 @@ n_samples <- ncol(mat)
 use_raster <- n_genes * n_samples > 100000
 
 # Source palette
-script_dir <- if (is.null(sys.frame(1)$ofile)) "." else dirname(sys.frame(1)$ofile)
+script_dir <- tryCatch(dirname(normalizePath(sys.frame(1)$ofile)), error = function(e) ".")
 source(file.path(script_dir, "palette.R"))
 
 # Colors from palette
