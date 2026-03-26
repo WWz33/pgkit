@@ -392,6 +392,10 @@ def run_kakscalculator(axt_file, output_file, method='MA', genetic_code=1,
         genetic_code: Genetic code table (1-33)
         calculator_path: Path to KaKs_Calculator executable
     """
+    # Expand ~ in path
+    if calculator_path:
+        calculator_path = os.path.expanduser(calculator_path)
+    
     if calculator_path is None:
         # Try common paths
         for path in ['KaKs_Calculator', 'KaKs', 'KaKs.exe']:
@@ -639,64 +643,21 @@ def random_sample_pairs(orthogroups, categories, og_sequences, n_genes, n_pairs)
 # R visualization script
 # ============================================================
 def generate_r_script(output_dir):
-    """Generate R script for Ka/Ks visualization"""
-    r_script = os.path.join(output_dir, 'kaks_boxplot.R')
-    od = output_dir.replace('\\', '/')
+    """Copy R script for Ka/Ks visualization"""
+    # Source script location
+    src_script = os.path.join(os.path.dirname(__file__), 'scripts', 'plot_kaks.R')
     
-    with open(r_script, 'w') as f:
-        f.write(f'''#!/usr/bin/env Rscript
-# Ka/Ks Boxplot by Gene Category (KaKs_Calculator 3.0 enhanced)
-
-library(ggplot2)
-
-df <- read.delim("{od}/kaks_values.tsv")
-df <- df[!is.na(df$Ka_Ks) & is.finite(df$Ka_Ks) & df$Ka_Ks > 0 & df$Ka_Ks < 5, ]
-df$Category <- factor(df$Category, levels=c("core", "soft_core", "dispensable", "private"))
-
-colors <- c("core"="#F8766D", "soft_core"="#7CAE00", "dispensable"="#00BFC4", "private"="#C77CFF")
-
-# Boxplot
-p <- ggplot(df, aes(x=Category, y=Ka_Ks, fill=Category)) +
-  geom_boxplot(alpha=0.7, outlier.size=0.5) +
-  scale_fill_manual(values=colors) +
-  labs(x="Gene Category", y="Ka/Ks", title="Ka/Ks Distribution by Gene Category") +
-  theme_bw(base_size=14) +
-  theme(plot.title=element_text(hjust=0.5, face="bold"), legend.position="none")
-
-ggsave("{od}/kaks_boxplot.pdf", p, width=8, height=6, dpi=300)
-ggsave("{od}/kaks_boxplot.png", p, width=8, height=6, dpi=300)
-cat("Saved: kaks_boxplot.pdf/png\\n")
-
-# If AICc available (v3.0), plot model selection
-if ("AICc" %in% colnames(df)) {{
-  df_aic <- df[!is.na(df$AICc), ]
-  if (nrow(df_aic) > 0) {{
-    p2 <- ggplot(df_aic, aes(x=Category, y=AICc, fill=Category)) +
-      geom_boxplot(alpha=0.7) +
-      scale_fill_manual(values=colors) +
-      labs(x="Gene Category", y="AICc", title="AICc by Gene Category (Model Quality)") +
-      theme_bw(base_size=14) +
-      theme(plot.title=element_text(hjust=0.5, face="bold"), legend.position="none")
-    ggsave("{od}/kaks_aicc.pdf", p2, width=8, height=6, dpi=300)
-    cat("Saved: kaks_aicc.pdf\\n")
-  }}
-}}
-
-# Summary
-cat("\\n=== Summary ===\\n")
-for (cat in c("core", "soft_core", "dispensable", "private")) {{
-  sub <- df[df$Category == cat, ]
-  if (nrow(sub) > 0)
-    cat(sprintf("  %s: n=%d, median=%.4f, mean=%.4f\\n", cat, nrow(sub),
-                median(sub$Ka_Ks), mean(sub$Ka_Ks)))
-}}
-
-# Kruskal-Wallis
-if (length(unique(df$Category)) > 1) {{
-  kw <- kruskal.test(Ka_Ks ~ Category, data=df)
-  cat(sprintf("\\nKruskal-Wallis: chi-sq=%.2f, p=%.2e\\n", kw$statistic, kw$p.value))
-}}
-''')
+    # Destination
+    dst_script = os.path.join(output_dir, 'kaks_boxplot.R')
+    
+    # Copy script
+    if os.path.exists(src_script):
+        shutil.copy2(src_script, dst_script)
+        log(f"R script saved: {dst_script}")
+    else:
+        log("Warning: plot_kaks.R not found in scripts directory")
+    
+    return dst_script
     
     log(f"R script saved: {r_script}")
     return r_script
@@ -1065,13 +1026,23 @@ def run_pangenome(args):
     # Check KaKs_Calculator availability
     use_calculator = args.use_kaks_calculator
     if use_calculator:
-        success, _ = run_kakscalculator("", "/dev/null", args.method, 
-                                         args.genetic_code, args.calculator_path)
-        if not success:
-            log("KaKs_Calculator not found, using Python fallback")
-            use_calculator = False
+        # Find calculator path
+        calc_path = args.calculator_path
+        if calc_path:
+            calc_path = os.path.expanduser(calc_path)
+        if calc_path is None:
+            for path in ['KaKs_Calculator', 'KaKs', 'KaKs.exe']:
+                if shutil.which(path):
+                    calc_path = path
+                    break
+        
+        if calc_path and os.path.exists(calc_path):
+            log(f"Using KaKs_Calculator: {calc_path} (method: {args.method})")
         else:
-            log(f"Using KaKs_Calculator with method: {args.method}")
+            log("KaKs_Calculator not found! Use -C to specify path")
+            log("  Example: -C /path/to/KaKs_Calculator-3.0/bin/KaKs")
+            log("  Falling back to Python NG method")
+            use_calculator = False
     
     # Prepare arguments for multiprocessing
     all_args = []
@@ -1079,7 +1050,7 @@ def run_pangenome(args):
         for og_id, g1, g2 in pairs:
             all_args.append((
                 og_id, g1, g2, protein_dict, cds_dict, tmp_dir,
-                use_calculator, args.method, args.genetic_code, args.calculator_path
+                use_calculator, args.method, args.genetic_code, calc_path
             ))
     
     # Calculate Ka/Ks with multiprocessing
@@ -1172,6 +1143,23 @@ def run_pangenome(args):
     # R script
     r_script = generate_r_script(args.output)
     
+    # Auto run R script
+    log("Generating Ka/Ks boxplot...")
+    out_prefix = os.path.join(args.output, 'kaks')
+    try:
+        result = subprocess.run(
+            ['Rscript', r_script, results_file, out_prefix],
+            capture_output=True, text=True, timeout=120
+        )
+        if result.returncode == 0:
+            print(result.stdout)
+        else:
+            log("R script failed, run manually:")
+            log(f"  Rscript {r_script} {results_file} {out_prefix}")
+    except FileNotFoundError:
+        log("Rscript not found, run manually:")
+        log(f"  Rscript {r_script} {results_file} {out_prefix}")
+    
     # Print summary
     print("\n" + "=" * 50)
     print("Ka/Ks Summary:")
@@ -1181,7 +1169,7 @@ def run_pangenome(args):
         for line in f:
             parts = line.strip().split('\t')
             print(f"  {parts[0]}: n={parts[2]}, median={parts[5]}, mean={parts[6]}")
-    print(f"\nRscript {r_script}")
+    
     log("Done!")
 
 
