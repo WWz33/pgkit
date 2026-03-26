@@ -423,6 +423,10 @@ def run_kakscalculator(axt_file, output_file, method='MA', genetic_code=1,
     
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        # Debug: log command and output if failed
+        if result.returncode != 0:
+            log(f"KaKs_Calculator failed: {' '.join(cmd)}")
+            log(f"  stderr: {result.stderr[:200]}")
         return result.returncode == 0, result.stderr
     except (FileNotFoundError, subprocess.TimeoutExpired) as e:
         return False, str(e)
@@ -569,22 +573,36 @@ def calculate_single_pair(args_tuple):
                         'Akaike_Weight': r.get('Akaike_Weight'),
                         'Model': r.get('Model'),
                     }
-        
-        # Fallback: Python Nei-Gojobori
-        Ka, Ks, kaks = estimate_kaks_ng(cds1, cds2, genetic_code)
-        return {
-            'Orthogroup': og_id,
-            'Gene1': g1,
-            'Gene2': g2,
-            'Ka': Ka,
-            'Ks': Ks,
-            'Ka_Ks': kaks,
-            'Method': 'NG-Python',
-            'P_Value': None,
-            'AICc': None,
-            'Akaike_Weight': None,
-            'Model': None,
-        }
+                else:
+                    # Parsing failed
+                    log(f"  Warning: Failed to parse KaKs_Calculator output for {g1}-{g2}")
+            else:
+                # Calculator failed
+                log(f"  Warning: KaKs_Calculator failed for {g1}-{g2}: {msg[:100]}")
+            
+            # Calculator failed, return None
+            return None
+        else:
+            # Fallback: Python Nei-Gojobori
+            Ka, Ks, kaks = estimate_kaks_ng(cds1, cds2, genetic_code)
+            
+            # Debug: log if calculation failed
+            if Ka is None and Ks is None and kaks is None:
+                pass  # Don't log every failure
+            
+            return {
+                'Orthogroup': og_id,
+                'Gene1': g1,
+                'Gene2': g2,
+                'Ka': Ka,
+                'Ks': Ks,
+                'Ka_Ks': kaks,
+                'Method': 'NG-Python',
+                'P_Value': None,
+                'AICc': None,
+                'Akaike_Weight': None,
+                'Model': None,
+            }
     
     finally:
         # Cleanup
@@ -1096,6 +1114,15 @@ def run_pangenome(args):
     # Save results
     log("Saving results...")
     
+    # Count valid results
+    n_valid = sum(1 for r in results if r.get('Ka_Ks') is not None and r['Ka_Ks'] > 0)
+    log(f"  Total results: {len(results)}, Valid Ka/Ks: {n_valid}")
+    
+    # Debug: show category distribution
+    for cat in ['Core', 'Softcore', 'Dispensable', 'Private']:
+        cat_count = sum(1 for r in results if r.get('Category') == cat)
+        log(f"  {cat}: {cat_count} results")
+    
     results_file = os.path.join(args.output, 'kaks_values.tsv')
     has_v3 = any(r.get('AICc') is not None for r in results)
     
@@ -1121,7 +1148,7 @@ def run_pangenome(args):
     summary_file = os.path.join(args.output, 'kaks_summary.tsv')
     with open(summary_file, 'w') as f:
         f.write('Category\tN_pairs\tN_valid\tMedian_Ka\tMedian_Ks\tMedian_KaKs\tMean_KaKs\n')
-        for cat in ['core', 'soft_core', 'dispensable', 'private']:
+        for cat in ['Core', 'Softcore', 'Dispensable', 'Private']:
             cat_r = [r for r in results if r.get('Category') == cat]
             valid = [r for r in cat_r if r['Ka_Ks'] is not None and 0 < r['Ka_Ks'] < 5]
             if valid:
