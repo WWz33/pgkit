@@ -24,20 +24,31 @@ if (!require("agricolae", quietly = TRUE)) {
 library(ggplot2)
 library(agricolae)
 
-# Source palette
-script_dir <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) {
-  cmdArgs <- commandArgs(trailingOnly = FALSE)
-  if (length(cmdArgs) >= 1) dirname(cmdArgs[1]) else "."
-})
-tryCatch(source(file.path(script_dir, "palette.R")), error = function(e) NULL)
-
 # Default category colors
-CATEGORY_COLORS <- c(
+cat_colors <- c(
   Core = "#f78d85",
   Softcore = "#ffc725",
   Dispensable = "#48b6a6",
   Private = "#8d9dc7"
 )
+
+# Try to source palette.R from same directory as this script
+script_path <- tryCatch({
+  cmdArgs <- commandArgs(trailingOnly = FALSE)
+  file_arg <- grep("--file=", cmdArgs)
+  if (length(file_arg) > 0) {
+    sub("--file=", "", cmdArgs[file_arg[1]])
+  } else {
+    NULL
+  }
+}, error = function(e) NULL)
+
+if (!is.null(script_path)) {
+  palette_path <- file.path(dirname(script_path), "palette.R")
+  if (file.exists(palette_path)) {
+    source(palette_path)
+  }
+}
 
 # Read data
 df <- read.delim(kaks_file)
@@ -68,24 +79,30 @@ for (cat in levels(df$Category)) {
 # ============================================================
 # Kruskal-Wallis test
 # ============================================================
+annot <- NULL
+
 if (length(unique(df$Category)) >= 2) {
   kw <- kruskal.test(Ka_Ks ~ Category, data = df)
   cat(sprintf("\nKruskal-Wallis test: chi-sq=%.4f, p=%.2e\n", kw$statistic, kw$p.value))
   
   # ============================================================
   # Fisher's LSD post-hoc test (alpha = 0.001)
+  # Use kruskal + LSD.test with rank transformation
   # ============================================================
   if (kw$p.value < 0.05) {
     cat("\nPost-hoc test (Fisher's LSD, alpha=0.001):\n")
     
-    # Run LSD.test from agricolae
-    lsd_result <- LSD.test(df$Ka_Ks, df$Category, p.adj = "none", alpha = 0.001)
+    # Rank transform for non-parametric post-hoc
+    df$rank_KaKs <- rank(df$Ka_Ks)
     
-    # Get significance groups
+    # Run LSD.test on ranks (need aov model)
+    aov_model <- aov(rank_KaKs ~ Category, data = df)
+    lsd_result <- LSD.test(aov_model, "Category", p.adj = "none", alpha = 0.001)
+    
+    # Get groups
     groups <- lsd_result$groups
     groups$Category <- rownames(groups)
     
-    # Print results
     cat("\nGroups:\n")
     print(groups)
     
@@ -94,19 +111,18 @@ if (length(unique(df$Category)) >= 2) {
     cat("\nGroups saved to:", paste0(out_prefix, "_kaks_groups.csv"), "\n")
     
     # Prepare annotation for boxplot
+    max_vals <- tapply(df$Ka_Ks, df$Category, max)
     annot <- data.frame(
       Category = groups$Category,
-      y_pos = tapply(df$Ka_Ks, df$Category, max) * 1.05,
+      y_pos = max_vals[groups$Category] * 1.1,
       label = groups$groups
     )
     annot <- annot[!is.na(annot$y_pos), ]
   } else {
-    annot <- NULL
     cat("No significant difference (p >= 0.05), skipping post-hoc test\n")
   }
 } else {
   cat("Only one category, skipping statistical tests\n")
-  annot <- NULL
 }
 
 # ============================================================
@@ -114,7 +130,7 @@ if (length(unique(df$Category)) >= 2) {
 # ============================================================
 p <- ggplot(df, aes(x = Category, y = Ka_Ks, fill = Category)) +
   geom_boxplot(alpha = 0.8, outlier.size = 0.8, outlier.alpha = 0.5) +
-  scale_fill_manual(values = CATEGORY_COLORS) +
+  scale_fill_manual(values = cat_colors) +
   labs(
     x = "Gene Category",
     y = "Ka/Ks",
