@@ -33,12 +33,12 @@ df <- read.delim(count_file)
 # Convert to long format
 df_long <- data.frame(
   Sample = rep(df$Species, 4),
-  Category = rep(c("Core", "Softcore", "Dispensable", "Specific"), each = nrow(df)),
-  Count = c(df$Core, df$Softcore, df$Dispensable, df$Specific)
+  Category = rep(c("Core", "Softcore", "Dispensable", "Private"), each = nrow(df)),
+  Count = c(df$Core, df$Softcore, df$Dispensable, df$Private)
 )
 
 df_long$Category <- factor(df_long$Category,
-  levels = c("Core", "Softcore", "Dispensable", "Specific")
+  levels = c("Core", "Softcore", "Dispensable", "Private")
 )
 
 # Sort samples by Core count

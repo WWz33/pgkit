@@ -53,12 +53,12 @@ def run(args):
         f.write("Category Statistics:\n")
         f.write("-" * 40 + "\n\n")
 
-        cat_order = ['Core', 'Softcore', 'Dispensable', 'Specific']
+        cat_order = ['Core', 'Softcore', 'Dispensable', 'Private']
         cat_names = {
             'Core': 'Core (present in all samples)',
             'Softcore': 'Softcore (present in >=90% samples)',
             'Dispensable': 'Dispensable (present in some samples)',
-            'Specific': 'Specific (present in single sample)'
+            'Private': 'Private (present in single sample)'
         }
 
         for cat in cat_order:

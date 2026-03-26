@@ -227,14 +227,14 @@ def run(args):
     gene_counts = count_genes_per_species_per_category(orthogroups, categories, species_list)
     count_rows = []
     for sp in species_list:
-        core = gene_counts[sp]['core']
-        soft = gene_counts[sp]['soft_core']
-        disp = gene_counts[sp]['dispensable']
-        priv = gene_counts[sp]['private']
+        core = gene_counts[sp]['Core']
+        soft = gene_counts[sp]['Softcore']
+        disp = gene_counts[sp]['Dispensable']
+        priv = gene_counts[sp]['Private']
         total = core + soft + disp + priv
         count_rows.append([sp, core, soft, disp, priv, total])
     count_file = os.path.join(args.output, 'gene_count_matrix.tsv')
-    write_tsv(count_file, ['Species', 'Core', 'Soft-core', 'Dispensable', 'Private', 'Total'], count_rows)
+    write_tsv(count_file, ['Species', 'Core', 'Softcore', 'Dispensable', 'Private', 'Total'], count_rows)
 
     # Save R scripts
     if args.save_r:

@@ -38,13 +38,13 @@ PGKIT_PALETTE_EXTENDED <- c(
 # Core: coral pink (#f78d85)
 # Softcore: gold (#ffc725)
 # Dispensable: teal (#48b6a6)
-# Specific: lavender blue (#8d9dc7)
+# Private: lavender blue (#8d9dc7)
 
 CATEGORY_COLORS <- c(
   Core       = "#f78d85",
   Softcore   = "#ffc725",
   Dispensable = "#48b6a6",
-  Specific   = "#8d9dc7"
+  Private   = "#8d9dc7"
 )
 
 # Alternative (lowercase keys)

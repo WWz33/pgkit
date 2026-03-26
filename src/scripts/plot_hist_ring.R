@@ -32,7 +32,7 @@ cat_levels <- names(CATEGORY_COLORS)
 df <- read.delim(freq_file)
 
 # Category order
-cat_levels <- c("Core", "Softcore", "Dispensable", "Specific")
+cat_levels <- c("Core", "Softcore", "Dispensable", "Private")
 df$Category <- factor(df$Category, levels = cat_levels)
 
 # ============================================================

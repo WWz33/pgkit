@@ -152,8 +152,8 @@ if (!is.null(pop_file)) {
 row_split <- NULL
 row_title <- NULL
 if (!is.null(df_freq)) {
-  row_split <- factor(df_freq$Category, levels = c("Core", "Softcore", "Dispensable", "Specific"))
-  row_title <- c("Core", "Softcore", "Dispensable", "Specific")
+  row_split <- factor(df_freq$Category, levels = c("Core", "Softcore", "Dispensable", "Private"))
+  row_title <- c("Core", "Softcore", "Dispensable", "Private")
 }
 
 # ============================================================
