@@ -84,7 +84,8 @@ row_anno_list[["Presence\nCount"]] <- anno_barplot(
   border = FALSE,
   width = unit(10, "mm"),
   gp = gpar(fill = "#2166AC", col = NA),
-  axis_param = list(side = "left", gp = gpar(fontsize = 7))
+  axis_param = list(side = "left", gp = gpar(fontsize = 7)),
+  which = "row"
 )
 
 row_anno <- do.call(rowAnnotation, row_anno_list)
@@ -121,7 +122,8 @@ col_anno_list[["Presence\nCount"]] <- anno_barplot(
   border = FALSE,
   height = unit(10, "mm"),
   gp = gpar(fill = "#E41A1C", col = NA),
-  axis_param = list(side = "top", gp = gpar(fontsize = 7))
+  axis_param = list(side = "top", gp = gpar(fontsize = 7)),
+  which = "column"
 )
 
 col_anno <- do.call(HeatmapAnnotation, col_anno_list)
