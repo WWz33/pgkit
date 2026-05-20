@@ -1,24 +1,24 @@
-# pgkit - Pan-gene Family Analysis Toolkit
+# pgkit - 泛基因组分析工具箱
 
 <!-- README-I18N:START -->
 
-**English** | [简体中文](./README.zh.md)
+[English](./README.md) | **简体中文**
 
 <!-- README-I18N:END -->
 
-A comprehensive Python toolkit for pan-genome analysis based on OrthoFinder output.
+一个基于 OrthoFinder 输出的泛基因组分析 Python 工具箱。
 
-## Features
+## 功能
 
-- **Full Pipeline**: `pgkit run` combines PAV + curve + visualization
-- **PAV Matrix Construction**: Auto-detect OrthoFinder output, merge UnassignedGenes
-- **Gene Family Classification**: Core, Soft-core, Dispensable, Private
-- **Saturation Curve**: Core/Pan gene family growth curve with Heaps' law fitting
-- **Visualization**: Pie+Histogram, Bar, Heatmap (with population annotation)
-- **Ka/Ks Calculation**: Selection pressure analysis (standalone + pan-genome mode)
-- **Statistics Report**: Comprehensive summary
+- **完整流程**: `pgkit run` 组合 PAV + curve + 可视化
+- **PAV 矩阵构建**: 自动识别 OrthoFinder 输出，合并 UnassignedGenes
+- **基因家族分类**: Core、Soft-core、Dispensable、Private
+- **饱和曲线**: Core/Pan 基因家族增长曲线，支持 Heaps' law 拟合
+- **可视化**: 饼图+直方图、柱状图、热图（支持群体注释）
+- **Ka/Ks 计算**: 选择压力分析（独立模式 + 泛基因组模式）
+- **统计报告**: 综合汇总
 
-## Installation
+## 安装
 
 ```bash
 git clone https://github.com/WWz33/pgkit.git
@@ -27,32 +27,32 @@ mamba env create -f environment.yml -n pgkit
 mamba activate pgkit
 ```
 
-## Quick Start
+## 快速开始
 
-**Input: OrthoFinder output directory**
+**输入: OrthoFinder 输出目录**
 
 ```
 OrthoFinder_Results/
-├── Orthogroups/
-│   ├── Orthogroups.tsv                    # Main orthogroup assignments
-│   ├── Orthogroups.txt                    # Orthogroup gene lists
-│   ├── Orthogroups.GeneCount.tsv          # Gene count matrix
-│   ├── Orthogroups_SingleCopyOrthologues.txt  # Single-copy orthogroups
-│   └── Orthogroups_UnassignedGenes.tsv    # Unassigned genes
-├── Orthogroup_Sequences/                  # Protein FASTA files
-│   ├── OG0000000.fa
-│   ├── OG0000001.fa
-│   └── ...
-├── Comparative_Genomics_Statistics/
-├── Gene_Duplication_Events/
-├── Gene_Trees/
-├── MultipleSequenceAlignments/
-└── Orthologues/
+鈹溾攢鈹€ Orthogroups/
+鈹?  鈹溾攢鈹€ Orthogroups.tsv                    # Main orthogroup assignments
+鈹?  鈹溾攢鈹€ Orthogroups.txt                    # Orthogroup gene lists
+鈹?  鈹溾攢鈹€ Orthogroups.GeneCount.tsv          # Gene count matrix
+鈹?  鈹溾攢鈹€ Orthogroups_SingleCopyOrthologues.txt  # Single-copy orthogroups
+鈹?  鈹斺攢鈹€ Orthogroups_UnassignedGenes.tsv    # Unassigned genes
+鈹溾攢鈹€ Orthogroup_Sequences/                  # Protein FASTA files
+鈹?  鈹溾攢鈹€ OG0000000.fa
+鈹?  鈹溾攢鈹€ OG0000001.fa
+鈹斺攢鈹€ ...
+鈹溾攢鈹€ Comparative_Genomics_Statistics/
+鈹溾攢鈹€ Gene_Duplication_Events/
+鈹溾攢鈹€ Gene_Trees/
+鈹溾攢鈹€ MultipleSequenceAlignments/
+鈹斺攢鈹€ Orthologues/
 ```
 
-**Commands:**
+**命令:**
 
-**Note**: `all.cds.fa` is a superset containing all CDS sequences for all genes across all species. kaks.py extracts only the CDS corresponding to genes present in Orthogroups.
+**注意**: `all.cds.fa` 是所有物种全部基因 CDS 的超集。kaks.py 只会提取 Orthogroups 中存在的基因对应 CDS。
 
 ```bash
 # Full pipeline (PAV + curve + visualization)
@@ -70,7 +70,7 @@ pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
 pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -P pop.tsv
 ```
 
-## Commands
+## 命令
 
 ### run - Full Pipeline
 
@@ -123,18 +123,18 @@ pgkit pav Orthogroups/ -o results -f pdf -r -s
 **Output:**
 ```
 results/
-├── pav_matrix.tsv           # PAV matrix (1/0)
-├── frequency_table.tsv      # Frequency table
-├── gene_category.tsv        # Gene-category-species table
-├── gene_count_matrix.tsv    # Gene count per species per category
-├── core_orthogroups.txt     # Core orthogroup list
-├── soft_core_orthogroups.txt
-├── dispensable_orthogroups.txt
-├── private_orthogroups.txt
-├── pgkit.pie.png            # Pie chart
-├── pgkit.bar.png            # Bar chart
-├── pgkit.heatmap.png        # Heatmap
-└── r_scripts/               # R scripts (if -r)
+鈹溾攢鈹€ pav_matrix.tsv           # PAV matrix (1/0)
+鈹溾攢鈹€ frequency_table.tsv      # Frequency table
+鈹溾攢鈹€ gene_category.tsv        # Gene-category-species table
+鈹溾攢鈹€ gene_count_matrix.tsv    # Gene count per species per category
+鈹溾攢鈹€ core_orthogroups.txt     # Core orthogroup list
+鈹溾攢鈹€ soft_core_orthogroups.txt
+鈹溾攢鈹€ dispensable_orthogroups.txt
+鈹溾攢鈹€ private_orthogroups.txt
+鈹溾攢鈹€ pgkit.pie.png            # Pie chart
+鈹溾攢鈹€ pgkit.bar.png            # Bar chart
+鈹溾攢鈹€ pgkit.heatmap.png        # Heatmap
+鈹斺攢鈹€ r_scripts/               # R scripts (if -r)
 ```
 
 ### curve - Saturation Curve
@@ -144,7 +144,7 @@ Generate Core/Pan gene family saturation curve with curve fitting.
 **Method**:
 1. For each sample count k (1 to n), randomly sample k species
 2. Calculate core (present in all k) and pan (present in at least 1) gene families
-3. Repeat N times (default: 100) to get mean ± SD
+3. Repeat N times (default: 100) to get mean 卤 SD
 4. Fit Heaps' law for pan-genome: `Pan = P1 * n^gamma + P2`
 5. Fit exponential decay for core-genome: `Core = C1 * exp(-C2 * n) + C3`
 
@@ -304,14 +304,14 @@ pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
 **Output:**
 ```
 kaks_results/
-├── kaks_values.tsv      # All Ka/Ks values
-├── kaks_summary.tsv     # Summary statistics by category
-├── kaks_invalid.tsv     # Skipped sequences (invalid CDS)
-├── kaks_boxplot.R       # R visualization script
-└── tmp/                 # Temporary files
+鈹溾攢鈹€ kaks_values.tsv      # All Ka/Ks values
+鈹溾攢鈹€ kaks_summary.tsv     # Summary statistics by category
+鈹溾攢鈹€ kaks_invalid.tsv     # Skipped sequences (invalid CDS)
+鈹溾攢鈹€ kaks_boxplot.R       # R visualization script
+鈹斺攢鈹€ tmp/                 # Temporary files
 ```
 
-## Classification Criteria
+## 分类标准
 
 | Category | Definition | Example (46 samples) |
 |----------|------------|----------------------|
@@ -320,75 +320,75 @@ kaks_results/
 | **Dispensable** | Present in some samples | 62 orthogroups |
 | **Private** | Present in single sample | 25 orthogroups |
 
-## KaKs_Calculator 3.0 Compatible Methods
+## KaKs_Calculator 3.0 兼容方法
 
-`kaks.py` supports all methods from KaKs_Calculator 3.0 (Zhang et al., 2021):
+`kaks.py` 支持 KaKs_Calculator 3.0 (Zhang et al., 2021) 的全部方法：
 
 | Method | Reference | Description | v3.0 |
 |--------|-----------|-------------|------|
-| **NG** | Nei & Gojobori (1986) | Simple, fast | ✓ |
-| **LWL** | Li, Wu & Luo (1985) | Weighted sites | ✓ |
-| **LPB** | Li (1993), Pamilo & Bianchi (1993) | Improved weighting | ✓ |
-| **GY** | Goldman & Yang (1994) | ML, codon model | ✓ |
-| **YN** | Yang & Nielsen (2000) | ML, HKY model | ✓ |
-| **MYN** | Zhang, Li & Yu (2006) | Modified YN | ✓ |
-| **MS** | Zhang et al. (2006) | Model Selection | ✓ (v3.0) |
-| **MA** | Zhang et al. (2006) | Model Averaging | ✓ (v3.0) [DEFAULT] |
+| **NG** | Nei & Gojobori (1986) | Simple, fast | 鉁?|
+| **LWL** | Li, Wu & Luo (1985) | Weighted sites | 鉁?|
+| **LPB** | Li (1993), Pamilo & Bianchi (1993) | Improved weighting | 鉁?|
+| **GY** | Goldman & Yang (1994) | ML, codon model | 鉁?|
+| **YN** | Yang & Nielsen (2000) | ML, HKY model | 鉁?|
+| **MYN** | Zhang, Li & Yu (2006) | Modified YN | 鉁?|
+| **MS** | Zhang et al. (2006) | Model Selection | 鉁?(v3.0) |
+| **MA** | Zhang et al. (2006) | Model Averaging | 鉁?(v3.0) [DEFAULT] |
 
-## R Visualization Scripts
+## R 可视化脚本
 
-Located in `pgkit/src/scripts/`:
+位于 `pgkit/src/scripts/`：
 
 | Script | Description |
 |--------|-------------|
-| `plot_pie.R` | Pie chart |
-| `plot_bar.R` | Bar chart |
-| `plot_heatmap.R` | Heatmap (pheatmap) |
-| `plot_heatmap_enhanced.R` | Heatmap (ComplexHeatmap, enhanced) |
-| `plot_curve.R` | Saturation curve |
-| `plot_curve_enhanced.R` | Saturation curve with fitting |
-| `plot_stackbar_enhanced.R` | Stacked bar with dendrogram |
-| `plot_hist_ring.R` | Histogram + ring chart |
-| `plot_halfviolin.R` | Half-violin + jitter |
+| `plot_pie.R` | 饼图 |
+| `plot_bar.R` | 柱状图 |
+| `plot_heatmap.R` | 热图 (pheatmap) |
+| `plot_heatmap_enhanced.R` | 热图 (ComplexHeatmap, enhanced) |
+| `plot_curve.R` | 饱和曲线 |
+| `plot_curve_enhanced.R` | 带拟合的饱和曲线 |
+| `plot_stackbar_enhanced.R` | 带树状图的堆叠柱状图 |
+| `plot_hist_ring.R` | 直方图 + 环形图 |
+| `plot_halfviolin.R` | 半小提琴 + 抖动点 |
 
-**Run R scripts manually:**
+**手动运行 R 脚本:**
 ```bash
 Rscript pgkit/src/scripts/plot_pie.R frequency_table.tsv out_prefix png
 Rscript pgkit/src/scripts/plot_heatmap.R pav_matrix.tsv out_prefix frequency_table.tsv png
 ```
 
-## Project Structure
+## 项目结构
 
 ```
 pgkit/
-├── pgkit.py                 # CLI entry point
-├── lib/
-│   ├── __init__.py
-│   ├── parser.py            # OrthoFinder output parser
-│   ├── classify.py          # Gene family classification
-│   └── utils.py             # Utility functions
-└── src/
-    ├── __init__.py
-    ├── pav.py               # PAV construction + classification
-    ├── curve.py             # Saturation curve
-    ├── pie.py               # Pie chart
-    ├── bar.py               # Bar chart
-    ├── heatmap.py           # Heatmap
-    ├── stats.py             # Statistics report
-    ├── kaks.py              # Ka/Ks calculation
-    └── scripts/
-        ├── plot_pie.R
-        ├── plot_bar.R
-        ├── plot_heatmap.R
-        ├── plot_heatmap_enhanced.R
-        ├── plot_curve.R
-        ├── plot_curve_enhanced.R
-        ├── plot_stackbar_enhanced.R
-        ├── plot_hist_ring.R
-        └── plot_halfviolin.R
+鈹溾攢鈹€ pgkit.py                 # CLI entry point
+鈹溾攢鈹€ lib/
+鈹?  鈹溾攢鈹€ __init__.py
+鈹?  鈹溾攢鈹€ parser.py            # OrthoFinder output parser
+鈹?  鈹溾攢鈹€ classify.py          # Gene family classification
+鈹斺攢鈹€ utils.py             # Utility functions
+鈹斺攢鈹€ src/
+    鈹溾攢鈹€ __init__.py
+    鈹溾攢鈹€ pav.py               # PAV construction + classification
+    鈹溾攢鈹€ curve.py             # Saturation curve
+    鈹溾攢鈹€ pie.py               # Pie chart
+    鈹溾攢鈹€ bar.py               # Bar chart
+    鈹溾攢鈹€ heatmap.py           # Heatmap
+    鈹溾攢鈹€ stats.py             # Statistics report
+    鈹溾攢鈹€ kaks.py              # Ka/Ks calculation
+    鈹斺攢鈹€ scripts/
+        鈹溾攢鈹€ plot_pie.R
+        鈹溾攢鈹€ plot_bar.R
+        鈹溾攢鈹€ plot_heatmap.R
+        鈹溾攢鈹€ plot_heatmap_enhanced.R
+        鈹溾攢鈹€ plot_curve.R
+        鈹溾攢鈹€ plot_curve_enhanced.R
+        鈹溾攢鈹€ plot_stackbar_enhanced.R
+        鈹溾攢鈹€ plot_hist_ring.R
+        鈹斺攢鈹€ plot_halfviolin.R
 ```
 
-## References
+## 参考文献
 
 1. **OrthoFinder**: Emms & Kelly (2019) Genome Biology
 2. **KaKs_Calculator 3.0**: Zhang et al. (2021) Genomics Proteomics Bioinformatics
@@ -397,10 +397,10 @@ pgkit/
 5. **Grapevine pan-genome**: (2023) Bioinformatics
 6. **APAVplot**: Visualization R package for PAV analysis
 
-## License
+## 许可证
 
 MIT
 
-## Contact
+## 联系方式
 
-For questions or issues, please open an issue on GitHub.
+如有问题或建议，请在 GitHub 提交 issue。
