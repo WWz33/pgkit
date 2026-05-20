@@ -1,0 +1,12 @@
+﻿{
+  "id": "package-structure-kaks-curve-cleanup",
+  "title": "Restructure pgkit as a Python package, split Ka/Ks code, fix curve sampling, clean parsers, and add tests",
+  "status": "completed",
+  "complexity": "L+",
+  "risk": "medium",
+  "domain": "python",
+  "currentPhase": "completed",
+  "nextAction": "Archive task",
+  "createdAt": "2026-05-21T03:41:53+08:00",
+  "branch": "main"
+}
