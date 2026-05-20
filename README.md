@@ -21,6 +21,119 @@ If you already have an OrthoFinder result folder, start with `pgkit run` for the
 | Visualize PAV structure | `pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results` | Heatmap with row annotations |
 | Calculate Ka/Ks for orthogroups or AXT pairs | `pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k` | Ka/Ks tables and summary files |
 
+## Simplified Commands
+
+```bash
+pgkit run Orthogroups/ -o results
+pgkit pav Orthogroups/ -o results
+pgkit curve results/pav_matrix.tsv -o results
+pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results
+pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
+pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results
+pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
+```
+
+## Parameter Reference
+
+### `run`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `input` | OrthoFinder output directory or `Orthogroups.tsv` file | required |
+| `-o, --output` | Output directory | `pgkit_output` |
+| `-t, --threshold` | Soft-core threshold for classification | `0.9` |
+| `-f, --format` | Image format for plots | `png` |
+| `-s, --simulations` | Random simulations for the saturation curve | `100` |
+| `-r, --save-r` | Save generated R scripts to the output directory | off |
+| `-n, --no-plot` | Skip visualization | off |
+| `-m, --metadata` | Optional sample metadata TSV for group summaries | none |
+| `--sample-col` | Sample column name in metadata | auto |
+| `--group-col` | Group column name in metadata | auto |
+
+### `pav`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `input` | OrthoFinder output directory or `Orthogroups.tsv` file | required |
+| `-o, --output` | Output directory | `pgkit_output` |
+| `-t, --threshold` | Soft-core threshold for classification | `0.9` |
+| `-f, --format` | Image format for plots | `png` |
+| `-r, --save-r` | Save generated R scripts | off |
+| `-n, --no-plot` | Skip visualization | off |
+| `-s, --stacked` | Use stacked bar chart | off |
+
+### `curve`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `pav` | PAV matrix file | required |
+| `-o, --output` | Output directory | `pgkit_output` |
+| `-s, --simulations` | Random simulations per sample size | `100` |
+
+### `group`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `pav` | PAV matrix file | required |
+| `metadata` | Sample metadata TSV with sample and group columns | required |
+| `-o, --output` | Output directory | `pgkit_output` |
+| `-f, --frequency` | Frequency table used to annotate categories | none |
+| `--sample-col` | Sample column name in metadata | auto |
+| `--group-col` | Group column name in metadata | auto |
+| `--specific-min` | Minimum within-group presence frequency for a group-specific call | `1.0` |
+| `--outside-max` | Maximum outside-group presence frequency for a group-specific call | `0.0` |
+
+### `heatmap`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `pav` | PAV matrix file | required |
+| `-f, --frequency` | Frequency table for row annotation | none |
+| `-P, --pop` | Population file with `species` and `group` columns | none |
+| `-o, --output` | Output directory | `pgkit_output` |
+
+### `stats`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `frequency` | Frequency table file | required |
+| `-g, --gene-count` | Gene count matrix file | none |
+| `-o, --output` | Output directory | `pgkit_output` |
+
+### `pie`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `frequency` | Frequency table file | required |
+| `-o, --output` | Output directory | `pgkit_output` |
+
+### `bar`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `gene_count` | Gene count matrix file | required |
+| `-o, --output` | Output directory | `pgkit_output` |
+| `-s, --stacked` | Use stacked bar chart | off |
+
+### `kaks`
+
+| Parameter | Meaning | Default |
+| --- | --- | --- |
+| `-i, --input` | Standalone AXT input file | none |
+| `orthogroups_dir` | OrthoFinder output directory for pan-genome mode | none |
+| `cds_file` | CDS FASTA file for pan-genome mode | none |
+| `-o, --output` | Output directory | `kaks_results` |
+| `-n, --n-genes` | Orthogroups sampled per category | `50` |
+| `-p, --n-pairs` | Species pairs sampled per orthogroup | `50` |
+| `-t, --threads` | Number of worker threads | `1` |
+| `-s, --seed` | Random seed | `42` |
+| `-T, --threshold` | Soft-core threshold for classification | `0.9` |
+| `-c, --genetic-code` | Genetic code table | `1` |
+| `-m, --method` | Ka/Ks method | `MA` |
+| `-k, --use-kaks-calculator` | Use external KaKs_Calculator if available | off |
+| `-C, --calculator-path` | Path to KaKs_Calculator executable | none |
+| `--check-ids` | Only verify CDS/protein ID matching, then exit | off |
+
 ## Installation
 
 ```bash

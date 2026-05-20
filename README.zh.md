@@ -21,6 +21,119 @@
 | 看 PAV 结构 | `pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results` | 带行注释的热图 |
 | 计算 orthogroup 或 AXT 的 Ka/Ks | `pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k` | Ka/Ks 表格和汇总文件 |
 
+## 简化命令
+
+```bash
+pgkit run Orthogroups/ -o results
+pgkit pav Orthogroups/ -o results
+pgkit curve results/pav_matrix.tsv -o results
+pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results
+pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
+pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results
+pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
+```
+
+## 参数说明
+
+### `run`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `input` | OrthoFinder 输出目录或 `Orthogroups.tsv` 文件 | 必填 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+| `-t, --threshold` | 分类时的 soft-core 阈值 | `0.9` |
+| `-f, --format` | 绘图格式 | `png` |
+| `-s, --simulations` | 饱和曲线随机重复次数 | `100` |
+| `-r, --save-r` | 保存生成的 R 脚本到输出目录 | 关闭 |
+| `-n, --no-plot` | 跳过可视化 | 关闭 |
+| `-m, --metadata` | 可选的样本元数据 TSV，用于分组汇总 | 无 |
+| `--sample-col` | 元数据中的样本列名 | 自动 |
+| `--group-col` | 元数据中的分组列名 | 自动 |
+
+### `pav`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `input` | OrthoFinder 输出目录或 `Orthogroups.tsv` 文件 | 必填 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+| `-t, --threshold` | 分类时的 soft-core 阈值 | `0.9` |
+| `-f, --format` | 绘图格式 | `png` |
+| `-r, --save-r` | 保存生成的 R 脚本 | 关闭 |
+| `-n, --no-plot` | 跳过可视化 | 关闭 |
+| `-s, --stacked` | 使用堆叠柱状图 | 关闭 |
+
+### `curve`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `pav` | PAV 矩阵文件 | 必填 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+| `-s, --simulations` | 每个样本数的随机重复次数 | `100` |
+
+### `group`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `pav` | PAV 矩阵文件 | 必填 |
+| `metadata` | 包含样本列和分组列的元数据 TSV | 必填 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+| `-f, --frequency` | 用于分类注释的频率表 | 无 |
+| `--sample-col` | 元数据中的样本列名 | 自动 |
+| `--group-col` | 元数据中的分组列名 | 自动 |
+| `--specific-min` | 组特异调用的组内最小频率 | `1.0` |
+| `--outside-max` | 组特异调用的组外最大频率 | `0.0` |
+
+### `heatmap`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `pav` | PAV 矩阵文件 | 必填 |
+| `-f, --frequency` | 行注释的频率表 | 无 |
+| `-P, --pop` | 群体文件（`species` 和 `group` 两列） | 无 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+
+### `stats`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `frequency` | 频率表文件 | 必填 |
+| `-g, --gene-count` | 基因计数矩阵文件 | 无 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+
+### `pie`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `frequency` | 频率表文件 | 必填 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+
+### `bar`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `gene_count` | 基因计数矩阵文件 | 必填 |
+| `-o, --output` | 输出目录 | `pgkit_output` |
+| `-s, --stacked` | 使用堆叠柱状图 | 关闭 |
+
+### `kaks`
+
+| 参数 | 含义 | 默认值 |
+| --- | --- | --- |
+| `-i, --input` | 独立模式的 AXT 输入文件 | 无 |
+| `orthogroups_dir` | 泛基因组模式下的 OrthoFinder 输出目录 | 无 |
+| `cds_file` | 泛基因组模式下的 CDS FASTA 文件 | 无 |
+| `-o, --output` | 输出目录 | `kaks_results` |
+| `-n, --n-genes` | 每个分类抽样的 orthogroup 数量 | `50` |
+| `-p, --n-pairs` | 每个 orthogroup 抽样的物种对数量 | `50` |
+| `-t, --threads` | 工作线程数 | `1` |
+| `-s, --seed` | 随机种子 | `42` |
+| `-T, --threshold` | 分类时的 soft-core 阈值 | `0.9` |
+| `-c, --genetic-code` | 遗传密码表 | `1` |
+| `-m, --method` | Ka/Ks 方法 | `MA` |
+| `-k, --use-kaks-calculator` | 使用外部 KaKs_Calculator（如可用） | 关闭 |
+| `-C, --calculator-path` | KaKs_Calculator 可执行文件路径 | 无 |
+| `--check-ids` | 仅检查 CDS/蛋白 ID 是否匹配，然后退出 | 关闭 |
+
 ## 安装
 
 ```bash
