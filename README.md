@@ -6,18 +6,20 @@
 
 <!-- README-I18N:END -->
 
-A comprehensive Python toolkit for pan-genome analysis based on OrthoFinder output.
+A lightweight Python toolkit for plant pan-genome workflows based on OrthoFinder output.
 
-## Features
+If you already have an OrthoFinder result folder, start with `pgkit run` for the default PAV + curve + visualization workflow. Add `-m metadata.tsv` when you also want group summaries.
 
-- **Full Pipeline**: `pgkit run` combines PAV + curve + visualization
-- **PAV Matrix Construction**: Auto-detect OrthoFinder output, merge UnassignedGenes
-- **Gene Family Classification**: Core, Soft-core, Dispensable, Private
-- **Saturation Curve**: Core/Pan gene family growth curve with Heaps' law fitting
-- **Visualization**: Pie+Histogram, Bar, Heatmap (with population annotation)
-- **Group Comparison**: Group-level PAV frequency, group-specific genes, Fisher tests
-- **Ka/Ks Calculation**: Selection pressure analysis (standalone + pan-genome mode)
-- **Statistics Report**: Comprehensive summary
+## What You Can Do
+
+| If you want to... | Start with | You get |
+| --- | --- | --- |
+| Turn OrthoFinder output into PAV and gene-family categories | `pgkit pav Orthogroups/ -o results` | `pav_matrix.tsv`, frequency table, category lists, plots |
+| Run the default end-to-end workflow | `pgkit run Orthogroups/ -o results` | PAV, saturation curve, visualizations, optional group summaries |
+| Compare wild/cultivar or other sample groups | `pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results` | Group frequencies, group-specific orthogroups, pairwise Fisher tests |
+| Summarize category counts and distributions | `pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results` | Category counts and per-species summary |
+| Visualize PAV structure | `pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results` | Heatmap with row annotations |
+| Calculate Ka/Ks for orthogroups or AXT pairs | `pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k` | Ka/Ks tables and summary files |
 
 ## Installation
 

@@ -6,18 +6,20 @@
 
 <!-- README-I18N:END -->
 
-一个基于 OrthoFinder 输出的泛基因组分析 Python 工具箱。
+一个面向植物泛基因组流程的轻量 Python 工具箱，基于 OrthoFinder 输出。
 
-## 功能
+如果你已经有 OrthoFinder 结果目录，默认先用 `pgkit run` 跑 PAV + 曲线 + 可视化。若还要看分组差异，再加 `-m metadata.tsv`。
 
-- **完整流程**: `pgkit run` 组合 PAV + curve + 可视化
-- **PAV 矩阵构建**: 自动识别 OrthoFinder 输出，合并 UnassignedGenes
-- **基因家族分类**: Core、Soft-core、Dispensable、Private
-- **饱和曲线**: Core/Pan 基因家族增长曲线，支持 Heaps' law 拟合
-- **可视化**: 饼图+直方图、柱状图、热图（支持群体注释）
-- **分组比较**: 分组 PAV 频率、组特异基因、Fisher 检验
-- **Ka/Ks 计算**: 选择压力分析（独立模式 + 泛基因组模式）
-- **统计报告**: 综合汇总
+## 你可以做什么
+
+| 你的目标 | 从哪里开始 | 结果 |
+| --- | --- | --- |
+| 把 OrthoFinder 输出转成 PAV 和基因家族分类 | `pgkit pav Orthogroups/ -o results` | `pav_matrix.tsv`、频率表、分类列表、图形 |
+| 跑默认端到端流程 | `pgkit run Orthogroups/ -o results` | PAV、饱和曲线、可视化、可选分组汇总 |
+| 比较野生/栽培或其他样本组 | `pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results` | 分组频率、组特异 orthogroup、配对 Fisher 检验 |
+| 汇总分类数量和分布 | `pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results` | 分类统计和每个物种的汇总 |
+| 看 PAV 结构 | `pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results` | 带行注释的热图 |
+| 计算 orthogroup 或 AXT 的 Ka/Ks | `pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k` | Ka/Ks 表格和汇总文件 |
 
 ## 安装
 
