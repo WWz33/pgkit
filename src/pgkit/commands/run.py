@@ -4,7 +4,7 @@ Run full pipeline: PAV + saturation curve
 import sys
 import os
 
-from pgkit.commands import curve, pav
+from pgkit.commands import curve, group, pav
 from pgkit.core.utils import log
 
 
@@ -17,6 +17,9 @@ def register(subparsers):
     p.add_argument('-s', '--simulations', type=int, default=100, help='Simulations for curve')
     p.add_argument('-r', '--save-r', action='store_true', help='Save R scripts')
     p.add_argument('-n', '--no-plot', action='store_true', help='Skip visualization')
+    p.add_argument('-m', '--metadata', help='Optional sample metadata TSV for group summaries')
+    p.add_argument('--sample-col', default=None, help='Sample column name in metadata')
+    p.add_argument('--group-col', default=None, help='Group column name in metadata')
     p.set_defaults(func=run)
 
 
@@ -60,6 +63,28 @@ def run(args):
             curve.run(curve_args)
         else:
             log("Warning: PAV matrix not found, skipping curve")
+
+    if args.metadata:
+        log("\n[Optional] Group-level PAV summaries...")
+
+        class GroupArgs:
+            pass
+
+        group_args = GroupArgs()
+        group_args.pav = os.path.join(args.output, 'pav_matrix.tsv')
+        group_args.metadata = args.metadata
+        group_args.output = args.output
+        group_args.frequency = os.path.join(args.output, 'frequency_table.tsv')
+        group_args.sample_col = args.sample_col
+        group_args.group_col = args.group_col
+        group_args.specific_min = 1.0
+        group_args.outside_max = 0.0
+        group_args.func = group.run
+
+        if os.path.exists(group_args.pav):
+            group.run(group_args)
+        else:
+            log("Warning: PAV matrix not found, skipping group summaries")
 
     log("\n" + "=" * 60)
     log("Pipeline complete!")

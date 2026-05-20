@@ -15,6 +15,7 @@ A comprehensive Python toolkit for pan-genome analysis based on OrthoFinder outp
 - **Gene Family Classification**: Core, Soft-core, Dispensable, Private
 - **Saturation Curve**: Core/Pan gene family growth curve with Heaps' law fitting
 - **Visualization**: Pie+Histogram, Bar, Heatmap (with population annotation)
+- **Group Comparison**: Group-level PAV frequency, group-specific genes, Fisher tests
 - **Ka/Ks Calculation**: Selection pressure analysis (standalone + pan-genome mode)
 - **Statistics Report**: Comprehensive summary
 
@@ -62,6 +63,7 @@ pgkit run Orthogroups/ -o results
 pgkit pav Orthogroups/ -o results
 pgkit curve results/pav_matrix.tsv -o results -s 100
 pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
+pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results
 
 # Ka/Ks (separate command)
 pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
@@ -89,6 +91,9 @@ Options:
   -s, --simulations     Simulations for curve (default: 100)
   -r, --save-r          Save R scripts to output directory
   -n, --no-plot         Skip visualization step
+  -m, --metadata        Optional sample metadata TSV for group summaries
+  --sample-col          Sample column name in metadata
+  --group-col           Group column name in metadata
 ```
 
 **Example:**
@@ -215,6 +220,48 @@ SpeciesC    Group2
 ```bash
 pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results
 pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -P pop.tsv -o results
+```
+
+### group - Group-Level PAV Comparison
+
+Compare gene family presence frequencies between sample groups, such as wild vs. cultivar, population, geography, or material type. This is a lightweight PAV frequency comparison, not phenotype association or GWAS.
+
+```bash
+pgkit group <pav_matrix> <metadata> [options]
+
+Positional:
+  pav_matrix            PAV matrix file (pav_matrix.tsv)
+  metadata              Sample metadata TSV with sample and group columns
+
+Options:
+  -o, --output          Output directory (default: pgkit_output)
+  -f, --frequency       Frequency table for category annotation
+  --sample-col          Sample column name (default: auto/first)
+  --group-col           Group column name (default: auto/second)
+  --specific-min        Minimum within-group frequency for group-specific calls (default: 1.0)
+  --outside-max         Maximum outside-group frequency for group-specific calls (default: 0.0)
+```
+
+**Metadata format**:
+```text
+Sample    Group
+SpeciesA  Wild
+SpeciesB  Wild
+SpeciesC  Cultivar
+```
+
+**Example:**
+```bash
+pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results
+pgkit run Orthogroups/ -o results -m metadata.tsv
+```
+
+**Output:**
+```
+results/
+├── group_frequency.tsv              # Per-group PAV frequency per orthogroup
+├── group_specific_orthogroups.tsv   # Group-specific or threshold-specific orthogroups
+└── group_pairwise.tsv               # Pairwise Fisher exact tests with FDR
 ```
 
 ### stats - Statistics Report

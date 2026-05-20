@@ -15,6 +15,7 @@
 - **基因家族分类**: Core、Soft-core、Dispensable、Private
 - **饱和曲线**: Core/Pan 基因家族增长曲线，支持 Heaps' law 拟合
 - **可视化**: 饼图+直方图、柱状图、热图（支持群体注释）
+- **分组比较**: 分组 PAV 频率、组特异基因、Fisher 检验
 - **Ka/Ks 计算**: 选择压力分析（独立模式 + 泛基因组模式）
 - **统计报告**: 综合汇总
 
@@ -62,6 +63,7 @@ pgkit run Orthogroups/ -o results
 pgkit pav Orthogroups/ -o results
 pgkit curve results/pav_matrix.tsv -o results -s 100
 pgkit stats results/frequency_table.tsv -g results/gene_count_matrix.tsv -o results
+pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results
 
 # Ka/Ks (separate command)
 pgkit kaks Orthogroups/ all.cds.fa -t 8 -m MA -k
@@ -89,6 +91,9 @@ Options:
   -s, --simulations     Simulations for curve (default: 100)
   -r, --save-r          Save R scripts to output directory
   -n, --no-plot         Skip visualization step
+  -m, --metadata        Optional sample metadata TSV for group summaries
+  --sample-col          Sample column name in metadata
+  --group-col           Group column name in metadata
 ```
 
 **Example:**
@@ -215,6 +220,48 @@ SpeciesC    Group2
 ```bash
 pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -o results
 pgkit heatmap results/pav_matrix.tsv -f results/frequency_table.tsv -P pop.tsv -o results
+```
+
+### group - 分组 PAV 比较
+
+比较不同样本组之间的基因家族存在频率，例如野生/栽培、亚群、地理来源或材料类型。这是轻量 PAV 频率比较，不是表型关联或 GWAS。
+
+```bash
+pgkit group <pav_matrix> <metadata> [options]
+
+Positional:
+  pav_matrix            PAV matrix file (pav_matrix.tsv)
+  metadata              Sample metadata TSV with sample and group columns
+
+Options:
+  -o, --output          Output directory (default: pgkit_output)
+  -f, --frequency       Frequency table for category annotation
+  --sample-col          Sample column name (default: auto/first)
+  --group-col           Group column name (default: auto/second)
+  --specific-min        Minimum within-group frequency for group-specific calls (default: 1.0)
+  --outside-max         Maximum outside-group frequency for group-specific calls (default: 0.0)
+```
+
+**Metadata format**:
+```text
+Sample    Group
+SpeciesA  Wild
+SpeciesB  Wild
+SpeciesC  Cultivar
+```
+
+**Example:**
+```bash
+pgkit group results/pav_matrix.tsv metadata.tsv -f results/frequency_table.tsv -o results
+pgkit run Orthogroups/ -o results -m metadata.tsv
+```
+
+**Output:**
+```
+results/
+├── group_frequency.tsv              # Per-group PAV frequency per orthogroup
+├── group_specific_orthogroups.tsv   # Group-specific or threshold-specific orthogroups
+└── group_pairwise.tsv               # Pairwise Fisher exact tests with FDR
 ```
 
 ### stats - Statistics Report

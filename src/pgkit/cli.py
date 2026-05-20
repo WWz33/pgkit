@@ -6,7 +6,7 @@ import argparse
 import sys
 from typing import List, Optional
 
-from pgkit.commands import bar, curve, heatmap, kaks, pav, pie, run, stats
+from pgkit.commands import bar, curve, group, heatmap, kaks, pav, pie, run, stats
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -22,6 +22,7 @@ Commands:
   curve   Saturation curve analysis
   pie     Pie chart
   bar     Bar chart
+  group   Group-level PAV frequency comparison
   heatmap Heatmap visualization (supports --pop for population annotation)
   stats   Statistics report
   kaks    Ka/Ks calculation
@@ -40,6 +41,7 @@ Examples:
     curve.register(subparsers)
     pie.register(subparsers)
     bar.register(subparsers)
+    group.register(subparsers)
     heatmap.register(subparsers)
     stats.register(subparsers)
     kaks.register(subparsers)

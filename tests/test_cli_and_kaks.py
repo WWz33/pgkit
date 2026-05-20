@@ -7,9 +7,17 @@ def test_cli_exposes_existing_subcommands() -> None:
     parser = build_parser()
     subcommands = parser._subparsers._group_actions[0].choices
 
-    assert {"run", "pav", "curve", "pie", "bar", "heatmap", "stats", "kaks"} <= set(
-        subcommands
-    )
+    assert {
+        "run",
+        "pav",
+        "curve",
+        "pie",
+        "bar",
+        "group",
+        "heatmap",
+        "stats",
+        "kaks",
+    } <= set(subcommands)
 
 
 def test_kaks_ng_identical_sequences_keep_original_zero_semantics() -> None:
